@@ -131,8 +131,17 @@ def produto_passou_da_zona(pos_produto, fim_da_zona):
 
 def avaliar_decisao(produto, decisao):
     """Compara a decisão (ou None) com a resposta correta e devolve o resultado."""
-    return {"decisao": decisao, "resposta_correta": "aprovar", "jogador_acertou": False,
-            "ia_acertou": False, "ia_corrigida": False}
+    correta = resposta_correta(produto)
+    jogador_acertou = decisao == correta
+    ia_certa = ia_acertou(produto)
+
+    return {
+        "decisao": decisao,
+        "resposta_correta": correta,
+        "jogador_acertou": jogador_acertou,
+        "ia_acertou": ia_certa,
+        "ia_corrigida": (not ia_certa) and jogador_acertou,
+    }
 
 
 def aplicar_resultado(estado, resultado):
@@ -162,4 +171,24 @@ def verificar_desfecho(erros, concluidos, total, limite_erros):
 
 def texto_feedback(produto, resultado):
     """Devolve a lista de linhas de texto do feedback."""
-    return []
+    linhas = []
+
+    if resultado["decisao"] is None:
+        linhas.append("Tempo esgotado: o produto passou sem decisão.")
+    elif resultado["jogador_acertou"]:
+        linhas.append("Você acertou!")
+    else:
+        linhas.append("Você errou.")
+
+    if resultado["ia_acertou"]:
+        linhas.append("A IA acertou.")
+    else:
+        linhas.append("A IA errou.")
+
+    if produto["defeitos"]:
+        nomes = [DEFEITOS[codigo] for codigo in produto["defeitos"]]
+        linhas.append("Defeitos: " + ", ".join(nomes))
+    else:
+        linhas.append("Sem defeitos.")
+
+    return linhas
