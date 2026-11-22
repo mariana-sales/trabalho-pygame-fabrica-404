@@ -81,18 +81,19 @@ def criar_estado(recorde):
 
 
 def mover_faixa(faixa_atual, direcao, num_faixas):
-    """Move a faixa em -1 ou +1, sem sair de 0..num_faixas-1."""
-    return faixa_atual
+    """Move a faixa em -1 (esquerda) ou +1 (direita), sem sair de 0..num_faixas-1."""
+    nova_faixa = faixa_atual + direcao
+    return limitar_valor(nova_faixa, 0, num_faixas - 1)
 
 
 def pode_decidir(faixa_inspetor, faixa_produto, produto_na_zona):
-    """True se o inspetor está na faixa do produto e o produto está na zona."""
-    return False
+    """True se o inspetor está na esteira do produto e o produto está na zona de inspeção."""
+    return faixa_inspetor == faixa_produto and produto_na_zona
 
 
 def produto_passou_da_zona(pos_produto, fim_da_zona):
-    """True se o produto já saiu da zona de inspeção."""
-    return False
+    """True se o produto já passou do fim da zona de inspeção."""
+    return pos_produto > fim_da_zona
 
 
 def avaliar_decisao(produto, decisao):
