@@ -1,6 +1,6 @@
 ﻿"""Camada visual: apresenta o estado recebido, sem alterar regras ou transições."""
 from functools import lru_cache
-from math import ceil, cos, sin
+from math import ceil
 from pathlib import Path
 
 import pygame
@@ -8,7 +8,7 @@ import pygame
 from src.config import (FAIXAS_X, Y_INSPETOR, DEFEITOS, LIMITE_ERROS,
                         FASE_FIM, FASE_FEEDBACK, FASE_JOGANDO, PORTAS_X,
                         Y_BASE_PORTAS, Y_FIM_ESTEIRA, Y_INICIO_ESTEIRA,
-                        ALTURA_INSPETOR)
+                        ALTURA_INSPETOR, Y_PASSAGEM_PORTA)
 
 ARTES = Path(__file__).resolve().parents[1] / "assets" / "imagens"
 FUNDO = (13, 25, 36)
@@ -73,6 +73,21 @@ def _fundo_pronto(raiz):
     sombra.fill((5, 15, 25, 48))
     pygame.draw.rect(sombra, (5, 15, 25, 78), (0, 0, 800, 280))
     fundo.blit(sombra, (0, 0))
+    # Revestimento industrial independente: reduz os vãos sem deformar o fundo.
+    for x in FAIXAS_X:
+        pygame.draw.rect(fundo, (31, 43, 54), (x-68, 155, 136, 139))
+        pygame.draw.rect(fundo, (61, 76, 88), (x-67, 156, 134, 137), 2)
+        pygame.draw.line(fundo, (13, 26, 36), (x-64, 183), (x+64, 183), 2)
+        for dx in (-54, 42):
+            for y in range(193, 206, 4):
+                pygame.draw.line(fundo, (15, 27, 36), (x+dx, y), (x+dx+12, y), 2)
+        for lado in (-1, 1):
+            for y in (166, 282):
+                pygame.draw.rect(fundo, (98, 113, 123), (x+lado*58-2, y, 4, 4))
+        pygame.draw.rect(fundo, (65, 81, 91), (x-38, 215, 76, 79))
+        pygame.draw.rect(fundo, (6, 12, 19), (x-30, 224, 60, 70))
+        pygame.draw.rect(fundo, (24, 40, 48), (x-17, 201, 34, 7))
+        pygame.draw.line(fundo, CIANO, (x-12, 203), (x+12, 203), 2)
     return fundo
 
 
@@ -99,8 +114,8 @@ def _linhas(tela, fonte, texto, x, y, largura, cor=TEXTO):
 def _cartao(tela, rect, alfa=220):
     rect = pygame.Rect(rect)
     camada = pygame.Surface(rect.size, pygame.SRCALPHA)
-    pygame.draw.rect(camada, (*PAINEL, alfa), camada.get_rect(), border_radius=6)
-    pygame.draw.rect(camada, (73, 106, 121, 150), camada.get_rect(), 1, border_radius=6)
+    pygame.draw.rect(camada, (*PAINEL, alfa), camada.get_rect(), border_radius=1)
+    pygame.draw.rect(camada, (73, 106, 121, 150), camada.get_rect(), 1, border_radius=1)
     tela.blit(camada, rect)
 
 
@@ -133,51 +148,47 @@ def desenhar_fundo(tela):
 def desenhar_esteiras(tela, faixa_ativa=None, tempo_ms=0, em_movimento=True):
     arte = _arte("esteira_central.png", (150, Y_FIM_ESTEIRA-Y_INICIO_ESTEIRA))
     fase = (tempo_ms / 110) % 16 if em_movimento else 0
-    angulo = tempo_ms / 700 if em_movimento else 0
     for faixa, x in enumerate(FAIXAS_X):
         # Pequeno trecho de ligação entra na saída da parede, atrás do sprite.
-        topo_ligacao = Y_INICIO_ESTEIRA-16
+        topo_ligacao = Y_INICIO_ESTEIRA
         pygame.draw.polygon(tela, (39, 47, 58), [(x-24, topo_ligacao), (x+24, topo_ligacao),
-                                               (x+30, Y_INICIO_ESTEIRA+12), (x-30, Y_INICIO_ESTEIRA+12)])
+                                               (x+30, 300), (x-30, 300)])
         for sinal in (-1, 1):
             pygame.draw.line(tela, (72, 86, 101), (x+sinal*24, topo_ligacao),
-                             (x+sinal*30, Y_INICIO_ESTEIRA+12), 2)
+                             (x+sinal*30, 300), 2)
         if arte is not None:
             tela.blit(arte, arte.get_rect(midbottom=(x, Y_FIM_ESTEIRA)))
         else:
             pygame.draw.rect(tela, (43, 48, 60), (x-65, Y_INICIO_ESTEIRA, 130, Y_FIM_ESTEIRA-Y_INICIO_ESTEIRA))
         # Segmentos discretos avançam só no tampo; os sprites não são deformados.
-        topo, fim = Y_INICIO_ESTEIRA+12, Y_FIM_ESTEIRA-44
+        topo, fim = Y_INICIO_ESTEIRA+12, Y_PASSAGEM_PORTA
         for y in range(topo, fim, 16):
             pos_y = int(y+fase)
             if pos_y >= fim:
                 continue
-            largura = round(24 + 32*(pos_y-topo)/(fim-topo))
+            largura = round(24 + 32*(pos_y-topo)/(Y_FIM_ESTEIRA-44-topo))
             pygame.draw.line(tela, (65, 75, 88), (x-largura, pos_y), (x+largura, pos_y))
-        for dx in (-37, -12, 12, 37):
-            centro = (x+dx, Y_FIM_ESTEIRA-24)
-            ponta = (centro[0]+round(cos(angulo)*3), centro[1]+round(sin(angulo)*3))
-            pygame.draw.line(tela, (117, 132, 146), centro, ponta)
+        # A plataforma dianteira e os roletes de inspeção permanecem imóveis.
         if faixa == faixa_ativa:
             camada = pygame.Surface((800, 600), pygame.SRCALPHA)
             for sinal in (-1, 1):
                 pygame.draw.line(camada, (*CIANO, 145),
-                                 (x+sinal*28, topo), (x+sinal*61, fim), 2)
+                                 (x+sinal*28, topo), (x+sinal*61, Y_FIM_ESTEIRA-44), 2)
             tela.blit(camada, (0, 0))
 
 
 def desenhar_portas(tela, portas=None):
     portas = portas if portas is not None else ("aberta",)*3
     for faixa, x in enumerate(PORTAS_X):
-        porta = _arte(f"porta_b_{portas[faixa]}_central.png", (120, 120))
+        porta = _arte(f"porta_b_{portas[faixa]}_central.png", (150, 150))
         if porta is not None:
             tela.blit(porta, porta.get_rect(midbottom=(x, Y_BASE_PORTAS)))
         else:
             pygame.draw.rect(tela, CIANO, (x-43, Y_BASE_PORTAS-80, 86, 55), 2)
         # Ciano = livre; âmbar = ocupada, usando o mesmo estado do sprite.
         cor = CIANO if portas[faixa] == "aberta" else AMARELO
-        pygame.draw.rect(tela, (9, 19, 27), (x-11, Y_BASE_PORTAS-93, 22, 9), border_radius=2)
-        pygame.draw.rect(tela, cor, (x-8, Y_BASE_PORTAS-90, 16, 3))
+        pygame.draw.rect(tela, (9, 19, 27), (x-11, Y_BASE_PORTAS-116, 22, 9), border_radius=2)
+        pygame.draw.rect(tela, cor, (x-8, Y_BASE_PORTAS-113, 16, 3))
 
 
 def zona_da_faixa(zona, faixa):
@@ -188,7 +199,8 @@ def estados_portas_inspecao(produto, rect_produto, zona):
     portas = ["aberta"] * len(FAIXAS_X)
     if produto is not None and rect_produto is not None:
         faixa = produto["faixa"]
-        if rect_produto.colliderect(zona_da_faixa(zona, faixa)):
+        if (rect_produto.top >= Y_PASSAGEM_PORTA
+                and rect_produto.colliderect(zona_da_faixa(zona, faixa))):
             portas[faixa] = "fechada"
     return tuple(portas)
 
@@ -213,7 +225,7 @@ def desenhar_cenario(tela, zona, portas=None, faixa_ativa=None, tempo_ms=0, em_m
 
 def desenhar_inspetor(tela, faixa_inspetor):
     x = FAIXAS_X[faixa_inspetor]
-    arte = _arte("inspetor_a.png", (76, ALTURA_INSPETOR))
+    arte = _arte("inspetor_a.png", (76, ALTURA_INSPETOR, Y_PASSAGEM_PORTA))
     if arte is not None:
         tela.blit(arte, arte.get_rect(midbottom=(x, Y_INSPETOR)))
     else:
@@ -231,9 +243,9 @@ def desenhar_produto(tela, rect_produto, produto=None):
 
 
 def desenhar_painel(tela, fontes, produto):
-    _cartao(tela, (12, 70, 776, 94), 211)
+    _cartao(tela, (12, 62, 776, 91), 211)
     for x in (188, 540):
-        pygame.draw.line(tela, (49, 77, 94), (x, 82), (x, 152))
+        pygame.draw.line(tela, (49, 77, 94), (x, 82), (x, 144))
     _texto(tela, fontes["rotulo"], "EM INSPEÇÃO", (24, 80), SUAVE)
     _linhas(tela, fontes["normal"], produto["nome"], 24, 104, 150)
     _texto(tela, fontes["rotulo"], "CARACTERÍSTICAS DO PRODUTO", (202, 80), SUAVE)
@@ -243,23 +255,22 @@ def desenhar_painel(tela, fontes, produto):
     if not produto["defeitos"]:
         _texto(tela, fontes["normal"], "Sem defeitos", (202, y), VERDE)
     _texto(tela, fontes["rotulo"], "RECOMENDAÇÃO DA IA", (554, 80), SUAVE)
-    _texto(tela, fontes["numero"], produto["recomendacao_ia"].upper(), (554, 99), CIANO)
-    _texto(tela, fontes["pequena"], "Compare com as características.", (554, 137), SUAVE)
+    _texto(tela, fontes["normal"], produto["recomendacao_ia"].upper(), (554, 99), CIANO)
+    _texto(tela, fontes["pequena"], "Compare com as características.", (554, 131), SUAVE)
 
 
 def desenhar_hud(tela, fontes, estado):
-    _cartao(tela, (0, 0, 800, 62), 237)
-    _texto(tela, fontes["titulo"], "FÁBRICA 404", (16, 4))
-    _texto(tela, fontes["rotulo"], "CONTROLE DE QUALIDADE", (17, 35), CIANO)
+    _cartao(tela, (12, 6, 776, 48), 237)
+    pygame.draw.line(tela, CIANO, (16, 51), (784, 51))
     total = len(estado["produtos"])
     progresso = min(estado["indice"]+1, total)
     dados = [("PONTOS", estado["pontos"]), ("ERROS", f'{estado["erros"]} / {LIMITE_ERROS}'),
              ("PRODUTO", f'{progresso} / {total}'), ("RECORDE", estado["recorde"])]
     for i, (rotulo, valor) in enumerate(dados):
-        x = 270+i*130
+        x = 30+i*194
         pygame.draw.line(tela, (49, 77, 94), (x-14, 12), (x-14, 49))
-        _texto(tela, fontes["rotulo"], rotulo, (x, 7), SUAVE)
-        _texto(tela, fontes["numero"], valor, (x, 25))
+        _texto(tela, fontes["rotulo"], rotulo, (x, 9), SUAVE)
+        _texto(tela, fontes["numero"], valor, (x+83, 17))
 
 
 def linhas_feedback(produto, resultado):
@@ -324,6 +335,9 @@ def _desenhar_quadro(tela, interface, fontes, estado, zona, rect_produto, tempo_
             if portas[produto["faixa"]] == "fechada":
                 pygame.draw.rect(tela, (49, 129, 140), rect_produto.inflate(6, 6), 1, border_radius=3)
             desenhar_produto(tela, rect_produto, produto)
+            if rect_produto.top < Y_PASSAGEM_PORTA:
+                # O produto passa por trás da travessa, sem ser pintado sobre ela.
+                desenhar_portas(tela, portas)
     desenhar_inspetor(tela, estado["faixa_inspetor"])
     # UI por último: mesma organização em todas as resoluções.
     desenhar_hud(interface, fontes, estado)

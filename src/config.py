@@ -37,11 +37,11 @@ DEFEITOS = {
 # Valores provisórios: o Kauan ajusta pela arte.
 FAIXAS_X = (242, 400, 558)      # eixos retos alinhados ao fundo que preenche 800 × 600
 PORTAS_X = FAIXAS_X
-Y_BASE_PORTAS = 414            # pés em y≈387, imediatamente antes da zona (390)
+Y_BASE_PORTAS = 400            # canvas de 150 px; pés no piso em y≈366
 Y_FIM_ESTEIRA = 452
 ZONA_Y = 390
 ZONA_ALTURA = 30
-Y_INICIO_ESTEIRA = 282
+Y_INICIO_ESTEIRA = 250         # produto surge dentro do vão escuro
 LARGURA_PRODUTO = 46
 ALTURA_PRODUTO = 42
 Y_INSPETOR = 568
@@ -59,3 +59,8 @@ COR_INSPETOR = (234, 88, 12)
 COR_PRODUTO = (217, 174, 114)
 COR_ACERTO = (22, 163, 74)
 COR_ERRO = (220, 38, 38)
+
+# Transporte: coordenadas lógicas e velocidade equivalente a 1,7 px/frame a 60 FPS.
+Y_PASSAGEM_PORTA = 366
+Y_PARADA_PRODUTO = ZONA_Y + ZONA_ALTURA - ALTURA_PRODUTO - 4
+VELOCIDADE_TRANSPORTE = VELOCIDADE_ESTEIRA * FPS

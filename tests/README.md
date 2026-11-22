@@ -1,73 +1,58 @@
-﻿# Testes e integração visual — Fábrica 404
+﻿# Testes e integração — Fábrica 404
 
 ## Executar
 
 ```powershell
+.venv\Scripts\python.exe main.py
 .venv\Scripts\python.exe -m pytest -q
 .venv\Scripts\python.exe -m src.previa
-.venv\Scripts\python.exe -m src.previa --tamanho 1280x720
-.venv\Scripts\python.exe -m src.previa --salvar output/previa-integrada
 ```
 
-A prévia usa exemplos explícitos, não grava recorde e aceita redimensionamento.
-Espaço alterna exemplos; Esc fecha. A exportação usa tempo visual zero e SDL
-sem janela para produzir imagens reproduzíveis.
+Jogo: setas esquerda/direita mudam de faixa; A aprova, R rejeita, Esc sai.
+Espaço reinicia na tela final. A prévia permanece independente, usa exemplos
+fictícios e não grava recorde; Espaço alterna suas cenas.
 
-## Contratos e pendências
+## Validação
 
-`src/jogo.py` ainda é o template com gemas e vidas. A main integrada em `d102ae6`
-implementa movimento, inspeção, sorteios, produtos e recomendações; avaliação,
-resultados, avanço e desfechos ainda são esboços. Os oito testes `pendente`
-usam `xfail(strict=True)`: retire a marca quando a regra for implementada.
-Para expor as pendências: `python -m pytest tests/test_logica.py --runxfail -q`.
-Nenhuma dessas regras foi alterada para implementar o visual.
+88 testes aprovados, sem xfail. Os oito contratos anteriormente pendentes agora
+têm implementação em src/funcoes.py; os testes mantêm suas expectativas.
 
-- `test_logica.py`: regras acordadas, incluindo 10 produtos, 5 defeituosos e
-  4 recomendações erradas, movimento, decisões, contadores e fim da partida.
-- `test_dados.py`: leitura e gravação apenas em arquivos temporários.
-- `test_desenho.py`: estado e Rects intactos, produtos visíveis, ocupação das
-  portas, animação determinística, faixa ativa, luzes, feedback e resoluções.
+- test_logica.py: sorteio de 10 produtos, 5 defeituosos e 4 erros da IA;
+  avaliação, pontuação, contadores, avanço, vitória e derrota.
+- test_dados.py: leitura e gravação em arquivos temporários.
+- test_desenho.py: estado/Rects intactos, visibilidade do produto, modelos,
+  portas e luzes, faixa ativa, feedback, animação e resoluções.
+- test_transporte.py: velocidade independente de FPS, escala contínua,
+  parada, porta aberta durante travessia, área de inspeção estática, bloqueio
+  de decisões prematuras ou na faixa errada, partidas completas e abertura/saída
+  do loop real sem escrever no arquivo de recorde.
 
-Fronteiras: produto passa da zona quando `pos_produto > fim_da_zona`.
-Rects apenas encostando não colidem. Avanço deve voltar a `Y_INICIO_ESTEIRA`.
-`ia_errou` conta recomendações já avaliadas.
+Testes gráficos usam SDL dummy, sem janela. Quadros do percurso do jogo em
+800 × 600 foram renderizados e inspecionados em output/transporte-revisado/.
+Isso não substitui a avaliação manual da sensação dos controles.
 
-## Interface de desenho
+## Estado e desenho
 
-Após criar o display, chame `criar_fontes()` uma vez. O contrato continua:
+src/jogo.py recebe entrada e atualiza o estado usando as regras compartilhadas.
+src/transporte.py calcula posição e Rect em coordenadas lógicas 800 × 600.
+A velocidade de 1,7 px/quadro foi convertida para 102 px/s, equivalente a 60 FPS.
+O produto nasce em y=250 dentro do vão e para em y=374; sua escala cresce
+uniformemente de 65% a 100%. Quadros longos não ultrapassam a parada.
 
-```python
-desenhar_jogo(tela, fontes, estado, zona, rect_produto)
-```
+O plano da porta fica em y=366. Ela permanece aberta até o topo do produto
+passar por esse plano e fecha enquanto a inspeção está ocupada. A luz usa
+ciano para aberta e âmbar para fechada. Após o feedback, o próximo produto
+começa no vão da parede. As bases das portas ficam fora da superfície móvel.
 
-Estado e Rects usam coordenadas lógicas 800 × 600, inclusive com janela maior.
-Use as constantes de `src/config.py`; uma zona pode ser
-`pygame.Rect(0, ZONA_Y, 800, ZONA_ALTURA)`. O parâmetro opcional `tempo_ms`
-controla somente o movimento visual; sem ele, usa o relógio do Pygame.
-A fase de feedback congela a animação. O desenho nunca movimenta o produto,
-calcula pontos, salva recorde ou muda a fase.
+O trecho anterior à porta tem segmentos animados. A plataforma de inspeção e
+seus roletes ficam estáticos. O feedback congela também o trecho móvel.
 
-A faixa ativa é a do produto atual, independentemente da posição da personagem.
-Sem produto visível, nenhuma faixa é destacada. As portas usam a ocupação do
-Rect na zona da respectiva faixa, inclusive durante feedback: ciano/aberta
-quando livre; âmbar/fechada quando ocupada. A antiga chave `estado['portas']`
-não é mais usada por `desenhar_jogo`; não há bloqueio físico novo.
+A camada de desenho não muda estado, posição ou recorde. O parâmetro opcional
+tempo_ms controla só a animação visual. O HUD e a ficha mostram os dados recebidos,
+sem títulos de abertura durante a partida. O fundo recebe revestimentos
+geométricos para ajustar os três vãos, preservando os PNGs e sua transparência.
 
-O loop deve atualizar recorde e resultados antes de desenhar. Pode fornecer
-`estado['controles']` com as teclas que de fato implementa.
-
-## Composição atual
-
-Fundo em `assets/imagens/fabrica404/fundo_fabrica.png`; portas B, zonas B e
-inspetor A preservados. Esteiras frontais e produtos usam PNGs de `fabrica404_v2`.
-Pacote usa a caixa; Frasco usa a garrafa; o catálogo de sorteio não foi alterado.
-
-A cena preenche a janela por escala uniforme e recorte, sem deformação. O recorte
-preserva a base para manter a personagem visível em janelas largas. A interface
-é composta separadamente: permanece inteira, com HUD no topo e rodapé na base.
-O fundo distante recebe uma sombra; os sprites mantêm contraste e canal alfa.
-Não há suavização ao escalar pixel art.
-
-A inspeção usa painel translúcido fixo; resultado tem no máximo três linhas;
-vitória/derrota usam a mesma fábrica e paleta. Imagens de referência da revisão:
-`output/previa-integrada/`. O fallback geométrico só aparece se faltar um PNG.
+O produto aguarda a decisão na inspeção, conforme o pedido atual. Não existe
+prazo novo no loop; o contrato avaliar_decisao(produto, None) continua testado
+para futura integração de tempo esgotado. As regras de sorteio, pontuação e
+limite de erros já implementadas foram preservadas.

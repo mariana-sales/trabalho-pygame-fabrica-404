@@ -11,7 +11,9 @@
 
 import random
 
-from src.config import DEFEITOS, NOMES_PRODUTOS, NUM_FAIXAS
+from src.config import (DEFEITOS, NOMES_PRODUTOS, NUM_FAIXAS, TOTAL_PRODUTOS,
+                        QTD_DEFEITUOSOS, QTD_ERROS_IA, Y_INICIO_ESTEIRA,
+                        PONTOS_POR_ACERTO)
 
 def calcular_pontos(pontos_atual, pontos_ganhos):
     """Soma os pontos ganhos à pontuação atual."""
@@ -103,10 +105,10 @@ def ia_acertou(produto):
 
 
 def criar_estado(recorde):
-    """Estado de uma partida nova (provisório: um produto fixo)."""
-    produto = {"nome": "Caixa", "faixa": 1, "defeitos": [], "recomendacao_ia": "aprovar"}
+    """Estado inicial conforme as quantidades já definidas no projeto."""
+    produtos = gerar_produtos(TOTAL_PRODUTOS, QTD_DEFEITUOSOS, QTD_ERROS_IA)
     return {
-        "fase": "jogando", "produtos": [produto], "indice": 0, "pos_produto": 0,
+        "fase": "jogando", "produtos": produtos, "indice": 0, "pos_produto": Y_INICIO_ESTEIRA,
         "faixa_inspetor": 1, "pontos": 0, "erros": 0, "ia_errou": 0,
         "ia_corrigida": 0, "resultado": None, "frames_feedback": 0,
         "desfecho": None, "recorde": recorde,
@@ -131,32 +133,43 @@ def produto_passou_da_zona(pos_produto, fim_da_zona):
 
 def avaliar_decisao(produto, decisao):
     """Compara a decisão (ou None) com a resposta correta e devolve o resultado."""
-    return {"decisao": decisao, "resposta_correta": "aprovar", "jogador_acertou": False,
-            "ia_acertou": False, "ia_corrigida": False}
+    correta = resposta_correta(produto)
+    acertou = decisao == correta
+    acerto_ia = ia_acertou(produto)
+    return {"decisao": decisao, "resposta_correta": correta, "jogador_acertou": acertou,
+            "ia_acertou": acerto_ia, "ia_corrigida": acertou and not acerto_ia}
 
 
 def aplicar_resultado(estado, resultado):
     """Atualiza pontos, erros, ia_errou e ia_corrigida no estado."""
-    pass
+    estado["pontos"] += PONTOS_POR_ACERTO if resultado["jogador_acertou"] else 0
+    estado["erros"] += int(not resultado["jogador_acertou"])
+    estado["ia_errou"] += int(not resultado["ia_acertou"])
+    estado["ia_corrigida"] += int(resultado["ia_corrigida"])
 
 
 def avancar_produto(estado):
     """Passa para o próximo produto e volta a fase para 'jogando'."""
-    pass
+    estado.update(indice=estado["indice"]+1, pos_produto=Y_INICIO_ESTEIRA,
+                  fase="jogando", resultado=None, frames_feedback=0)
 
 
 def partida_perdida(erros, limite_erros):
     """True se os erros chegaram ao limite."""
-    return False
+    return erros >= limite_erros
 
 
 def partida_vencida(erros, concluidos, total, limite_erros):
     """True se todos os produtos foram concluídos com erros abaixo do limite."""
-    return False
+    return concluidos >= total and not partida_perdida(erros, limite_erros)
 
 
 def verificar_desfecho(erros, concluidos, total, limite_erros):
     """Devolve None, 'vitoria' ou 'derrota' (a derrota tem prioridade)."""
+    if partida_perdida(erros, limite_erros):
+        return "derrota"
+    if partida_vencida(erros, concluidos, total, limite_erros):
+        return "vitoria"
     return None
 
 

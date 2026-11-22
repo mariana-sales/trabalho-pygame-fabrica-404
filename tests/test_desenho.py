@@ -11,7 +11,7 @@ from src import desenho
 from src.config import (FAIXAS_X, Y_INSPETOR, ZONA_Y, ZONA_ALTURA,
                         ALTURA_INSPETOR, PORTAS_X, Y_BASE_PORTAS,
                         LARGURA_TELA, ALTURA_TELA, LARGURA_PRODUTO, ALTURA_PRODUTO,
-                        Y_INICIO_ESTEIRA, Y_FIM_ESTEIRA)
+                        Y_INICIO_ESTEIRA, Y_FIM_ESTEIRA, Y_PASSAGEM_PORTA)
 from src.previa import exemplos
 
 
@@ -118,7 +118,9 @@ def test_porta_abre_fecha_e_reabre_conforme_ocupacao(faixa):
     abertas = ("aberta",) * 3
     assert desenho.estados_portas_inspecao(produto, rect, zona) == abertas
 
-    rect.y += 1  # Entrou na zona: apenas esta porta fecha.
+    rect.y += 1  # Entrada parcial: não fechar sobre o produto.
+    assert desenho.estados_portas_inspecao(produto, rect, zona) == abertas
+    rect.y = Y_PASSAGEM_PORTA  # Produto inteiro passou pelo plano da porta.
     esperado = list(abertas)
     esperado[faixa] = "fechada"
     assert desenho.estados_portas_inspecao(produto, rect, zona) == tuple(esperado)
@@ -180,11 +182,11 @@ def test_luzes_das_portas_indicam_ocupacao_e_liberacao(superficie, faixa):
     desenho.desenhar_jogo(tela, fontes, estado, zona, rect, tempo_ms=0)
     for outra, x in enumerate(PORTAS_X):
         esperado = desenho.AMARELO if outra == faixa else desenho.CIANO
-        assert tela.get_at((x, Y_BASE_PORTAS-89))[:3] == esperado
+        assert tela.get_at((x, Y_BASE_PORTAS-112))[:3] == esperado
     rect.top = zona.bottom
     desenho.desenhar_jogo(tela, fontes, estado, zona, rect, tempo_ms=0)
     for x in PORTAS_X:
-        assert tela.get_at((x, Y_BASE_PORTAS-89))[:3] == desenho.CIANO
+        assert tela.get_at((x, Y_BASE_PORTAS-112))[:3] == desenho.CIANO
 
 
 def test_animacao_visual_sem_mudar_partida(superficie):

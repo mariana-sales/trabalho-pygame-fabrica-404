@@ -1,4 +1,4 @@
-"""Contratos acordados; xfail estrito identifica esboços ainda pendentes."""
+"""Contratos das regras da fábrica, incluindo avaliação e desfechos."""
 import random
 
 import pygame
@@ -6,8 +6,6 @@ import pytest
 
 from src import funcoes as f
 from src.config import DEFEITOS, NOMES_PRODUTOS
-
-pendente = pytest.mark.xfail(strict=True, reason="Contrato pendente no esboço da Mariana; ver tests/README.md")
 
 
 def produto(defeitos=(), recomendacao="aprovar"):
@@ -108,7 +106,6 @@ def test_acerto_da_ia():
                 recomendacao == ("rejeitar" if defeitos else "aprovar"))
 
 
-@pendente
 def test_criar_estado():
     estado = f.criar_estado(70)
     assert estado["recorde"] == 70
@@ -118,7 +115,6 @@ def test_criar_estado():
     assert sum(bool(p["defeitos"]) for p in estado["produtos"]) == 5
 
 
-@pendente
 def test_decisoes_e_tempo_esgotado():
     for defeitos in ([], ["codigo_ilegivel"]):
         correta = "rejeitar" if defeitos else "aprovar"
@@ -130,7 +126,6 @@ def test_decisoes_e_tempo_esgotado():
                     ia_corrigida=decisao == correta and ia != correta)
 
 
-@pendente
 def test_pontos_erros_e_contadores():
     for jogador, ia in [(True, True), (True, False), (False, True), (False, False)]:
         estado = f.criar_estado(50)
@@ -144,7 +139,6 @@ def test_pontos_erros_e_contadores():
         assert estado["ia_corrigida"] == 1 + (jogador and not ia)
 
 
-@pendente
 def test_tempo_esgotado_conta_erro():
     estado = f.criar_estado(0)
     f.aplicar_resultado(estado, f.avaliar_decisao(produto(), None))
@@ -152,7 +146,6 @@ def test_tempo_esgotado_conta_erro():
     assert estado["pontos"] == 0
 
 
-@pendente
 def test_avancar_produto():
     from src.config import Y_INICIO_ESTEIRA
     estado = f.criar_estado(50)
@@ -164,19 +157,16 @@ def test_avancar_produto():
     assert (estado["pontos"], estado["erros"], estado["recorde"]) == (20, 1, 50)
 
 
-@pendente
 def test_derrota():
     assert [f.partida_perdida(n, 3) for n in (0, 2, 3, 4)] == [False, False, True, True]
 
 
-@pendente
 def test_vitoria():
     assert f.partida_vencida(2, 10, 10, 3)
     assert not f.partida_vencida(2, 9, 10, 3)
     assert not f.partida_vencida(3, 10, 10, 3)
 
 
-@pendente
 def test_desfecho_e_prioridade_derrota():
     assert f.verificar_desfecho(0, 9, 10, 3) is None
     assert f.verificar_desfecho(2, 10, 10, 3) == "vitoria"
