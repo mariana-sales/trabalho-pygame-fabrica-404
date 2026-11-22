@@ -7,13 +7,14 @@ from src.config import (
     TITULO_JOGO,
     CINZA,
     CAMINHO_RECORDE,
+    NUM_FAIXAS,
     FAIXAS_X,
     ZONA_Y,
     ZONA_ALTURA,
     LARGURA_PRODUTO,
     ALTURA_PRODUTO,
 )
-from src.funcoes import criar_estado
+from src.funcoes import criar_estado, mover_faixa
 from src.desenho import criar_fontes, desenhar_jogo
 from src.dados import carregar_recorde
 
@@ -32,10 +33,14 @@ def processar_eventos(estado, zona):
     for evento in pygame.event.get():
         if evento.type == pygame.QUIT:
             return False
-        if evento.type == pygame.KEYDOWN and evento.key == pygame.K_ESCAPE:
-            return False
+        if evento.type == pygame.KEYDOWN:
+            if evento.key == pygame.K_ESCAPE:
+                return False
+            if evento.key == pygame.K_LEFT:
+                estado["faixa_inspetor"] = mover_faixa(estado["faixa_inspetor"], -1, NUM_FAIXAS)
+            if evento.key == pygame.K_RIGHT:
+                estado["faixa_inspetor"] = mover_faixa(estado["faixa_inspetor"], 1, NUM_FAIXAS)
     return True
-
 
 def executar_jogo():
     """Executa o loop principal do jogo."""
