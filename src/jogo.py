@@ -9,6 +9,8 @@ from src.config import (
     CAMINHO_RECORDE,
     NUM_FAIXAS,
     FASE_JOGANDO,
+    FASE_FEEDBACK,
+    DURACAO_FEEDBACK,
     FAIXAS_X,
     ZONA_Y,
     ZONA_ALTURA,
@@ -16,6 +18,16 @@ from src.config import (
     ALTURA_PRODUTO,
     VELOCIDADE_ESTEIRA,
 )
+from src.funcoes import (
+    criar_estado,
+    mover_faixa,
+    mover_produto,
+    verificar_colisao,
+    pode_decidir,
+    avaliar_decisao,
+    aplicar_resultado,
+)
+
 from src.funcoes import criar_estado, mover_faixa, mover_produto
 from src.desenho import criar_fontes, desenhar_jogo
 from src.dados import carregar_recorde
@@ -30,6 +42,27 @@ def rect_do_produto(estado):
     return retangulo
 
 
+def tentar_decidir(estado, decisao, zona):
+    """Aprova ou rejeita o produto atual, se o jogador puder decidir agora."""
+    if estado["fase"] != FASE_JOGANDO:
+        return
+
+    produto = estado["produtos"][estado["indice"]]
+    produto_na_zona = verificar_colisao(rect_do_produto(estado), zona)
+
+    if pode_decidir(estado["faixa_inspetor"], produto["faixa"], produto_na_zona):
+        resultado = avaliar_decisao(produto, decisao)
+        finalizar_produto(estado, resultado)
+
+
+def finalizar_produto(estado, resultado):
+    """Registra o resultado da decisão e entra na fase de feedback."""
+    aplicar_resultado(estado, resultado)
+    estado["resultado"] = resultado
+    estado["fase"] = FASE_FEEDBACK
+    estado["frames_feedback"] = DURACAO_FEEDBACK
+
+
 def processar_eventos(estado, zona):
     """Trata os eventos da janela e do teclado. Devolve False para fechar o jogo."""
     for evento in pygame.event.get():
@@ -42,6 +75,10 @@ def processar_eventos(estado, zona):
                 estado["faixa_inspetor"] = mover_faixa(estado["faixa_inspetor"], -1, NUM_FAIXAS)
             if evento.key == pygame.K_RIGHT:
                 estado["faixa_inspetor"] = mover_faixa(estado["faixa_inspetor"], 1, NUM_FAIXAS)
+            if evento.key == pygame.K_a:
+                tentar_decidir(estado, "aprovar", zona)
+            if evento.key == pygame.K_r:
+                tentar_decidir(estado, "rejeitar", zona)
     return True
 
 
