@@ -34,13 +34,14 @@ DEFEITOS = {
 }
 
 # --- Layout e cores ---  (Kauan)
-FAIXAS_Y = (230, 310, 390)      # centro vertical de cada faixa
-ZONA_X = 480
-ZONA_LARGURA = 250
-X_INICIO_ESTEIRA = 0
+# Valores provisórios: o Kauan ajusta pela arte.
+FAIXAS_X = (230, 310, 390)      # centro horizontal de cada faixa
+ZONA_Y = 480
+ZONA_ALTURA = 250
+Y_INICIO_ESTEIRA = 0
 LARGURA_PRODUTO = 60
 ALTURA_PRODUTO = 50
-X_INSPETOR = 740
+Y_INSPETOR = 740
 VELOCIDADE_ESTEIRA = 1.7        # pixels por quadro
 DURACAO_FEEDBACK = 120          # quadros (2 s a 60 FPS)
 

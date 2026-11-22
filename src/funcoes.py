@@ -1,8 +1,12 @@
 # CONTRATO DE DADOS (consulte antes de usar uma chave)
-# produto:   nome, faixa (0 a 2), defeitos (lista), recomendacao_ia ("aprovar" ou "rejeitar")
+#
+# produto: nome, faixa (0 a 2) 0 é a esteira da esquerda e 2 é a esteira
+#          da direita, defeitos (lista), recomendacao_ia ("aprovar" ou "rejeitar")
+#
 # resultado: decisao ("aprovar", "rejeitar" ou None), resposta_correta,
 #            jogador_acertou, ia_acertou, ia_corrigida
-# estado:    fase, produtos, indice, x_produto, faixa_inspetor, pontos, erros,
+#
+# estado:    fase, produtos, indice, pos_produto, faixa_inspetor, pontos, erros,
 #            ia_errou, ia_corrigida, resultado, frames_feedback, desfecho, recorde
 
 def calcular_pontos(pontos_atual, pontos_ganhos):
@@ -69,7 +73,7 @@ def criar_estado(recorde):
     """Estado de uma partida nova (provisório: um produto fixo)."""
     produto = {"nome": "Caixa", "faixa": 1, "defeitos": [], "recomendacao_ia": "aprovar"}
     return {
-        "fase": "jogando", "produtos": [produto], "indice": 0, "x_produto": 0,
+        "fase": "jogando", "produtos": [produto], "indice": 0, "pos_produto": 0,
         "faixa_inspetor": 1, "pontos": 0, "erros": 0, "ia_errou": 0,
         "ia_corrigida": 0, "resultado": None, "frames_feedback": 0,
         "desfecho": None, "recorde": recorde,
@@ -86,7 +90,7 @@ def pode_decidir(faixa_inspetor, faixa_produto, produto_na_zona):
     return False
 
 
-def produto_passou_da_zona(x_produto, fim_da_zona):
+def produto_passou_da_zona(pos_produto, fim_da_zona):
     """True se o produto já saiu da zona de inspeção."""
     return False
 
