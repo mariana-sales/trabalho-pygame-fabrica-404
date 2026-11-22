@@ -1,0 +1,87 @@
+[
+  {
+    "name": "esteira_central",
+    "path": "C:/Users/kauan/.codex/generated_images/01a20126-a1de-7042-907d-aaf5bd522f72/exec-0e8a16a1-828a-4e16-a776-4b551e0b5c5f.png",
+    "prompt": "Use case: stylized-concept. Asset type: one transparent PNG game sprite. The attached user screenshot is the mandatory visual reference, specifically the game scene inside it, NOT its slide border or captions. Reproduce faithfully its clean small pixel-art, limited dark navy/graphite/steel gray palette, sharp outlines, modest cyan details; no painterly or realistic 3D treatment. Generate ONLY the CENTRAL conveyor belt, isolated on real transparency: narrow straight back edge at top, wider front edge at bottom, symmetric frontal slightly elevated fixed camera. Dark segmented flat belt surface, thin steel side rails, small cyan corner housings, a row of four clearly visible steel rollers at the near/front lip. Match the central conveyor in the reference; approximate visible width:height ratio 0.85:1. NO portal, inspector, product, inspection ring, background, shadow outside object, letters, title or UI. Preserve crisp pixel steps and simple material shading. Entire object with transparent margin, no cropping. This is the master central sprite for a matched set."
+  },
+  {
+    "name": "esteira_direita",
+    "path": "C:\\Users\\kauan\\.codex\\generated_images\\01a20126-a1de-7042-907d-aaf5bd522f72\\exec-9f9978b6-191a-4810-b1c1-187f86d5b74e.png",
+    "prompt": "Create exactly ONE isolated transparent PNG sprite for Fabrica 404. Reference 1 is the mandatory scene style/camera, reference 2 is the new matched central conveyor. Clean sharp low-resolution pixel art, dark navy outlines, graphite, steel, restrained cyan, few flat tones, NO realistic textures, soft gradients, huge glow, lettering, UI, background, cast shadow or other assets. RIGHT conveyor, match central conveyor construction exactly including four front rollers and cyan corner caps, but perspective of the RIGHT lane in reference 1: narrow rear edge shifted to the LEFT relative to wide front edge. Only slight diagonal convergence toward central vanishing point. Do not rotate the front face; front edge horizontal. No portal, product, inspection marking or character. Whole object, transparent margin."
+  },
+  {
+    "name": "esteira_esquerda",
+    "path": "C:\\Users\\kauan\\.codex\\generated_images\\01a20126-a1de-7042-907d-aaf5bd522f72\\exec-61028842-a2bc-4cf9-8eb5-2c7ea53e31d5.png",
+    "prompt": "Create exactly ONE isolated transparent PNG sprite for Fabrica 404. Reference 1 is the mandatory scene style/camera, reference 2 is the new matched central conveyor. Clean sharp low-resolution pixel art, dark navy outlines, graphite, steel, restrained cyan, few flat tones, NO realistic textures, soft gradients, huge glow, lettering, UI, background, cast shadow or other assets. LEFT conveyor, match central conveyor construction exactly including four front rollers and cyan corner caps, but perspective of the LEFT lane in reference 1: narrow rear edge shifted to the RIGHT relative to wide front edge. Only slight diagonal convergence toward central vanishing point. Do not rotate the front face; front edge horizontal. No portal, product, inspection marking or character. Whole object, transparent margin."
+  },
+  {
+    "name": "inspetor",
+    "path": "C:\\Users\\kauan\\.codex\\generated_images\\01a20126-a1de-7042-907d-aaf5bd522f72\\exec-a5e77cf0-ee60-4707-b911-a7123b45b26e.png",
+    "prompt": "Create exactly ONE isolated transparent PNG sprite for Fabrica 404. Reference 1 is the mandatory scene style/camera, reference 2 is the new matched central conveyor. Clean sharp low-resolution pixel art, dark navy outlines, graphite, steel, restrained cyan, few flat tones, NO realistic textures, soft gradients, huge glow, lettering, UI, background, cast shadow or other assets. ONLY the small inspector seen from BACK in reference 1, exact standing pose with clipboard at right, yellow rounded hardhat, red ponytail, dark navy workwear, yellow sleeve/calf trim, black boots. Faithful silhouette, not a new character. Small-game-sprite appearance, about 40 pixels wide by 85 pixels tall in logical pixel resolution, upscaled with sharp nearest-neighbor blocks. Full isolated body; no floor/shadow/conveyor."
+  },
+  {
+    "name": "porta_aberta_central",
+    "path": "C:\\Users\\kauan\\.codex\\generated_images\\01a20126-a1de-7042-907d-aaf5bd522f72\\exec-42f12e5f-7eb3-4eda-84e7-aa0862de1b41.png",
+    "prompt": "Create exactly ONE isolated transparent PNG sprite for Fabrica 404. Reference 1 is the mandatory scene style/camera, reference 2 is the new matched central conveyor. Clean sharp low-resolution pixel art, dark navy outlines, graphite, steel, restrained cyan, few flat tones, NO realistic textures, soft gradients, huge glow, lettering, UI, background, cast shadow or other assets. ONLY the CENTRAL small mechanical portal, square industrial gray frame, two fixed upright supports, header with tiny cyan indicator, muted yellow-black diagonal safety strips on inner frame like the reference. OPEN state: absolutely transparent passage, doors retracted, no back wall. Front-facing symmetrical, slightly elevated view. Match reference portal form; do not include belt or floor. Center in square transparent canvas with 10 percent margin, fixed base line at 90 percent height. This will have a closed variant with identical frame."
+  },
+  {
+    "name": "porta_aberta_direita",
+    "path": "C:\\Users\\kauan\\.codex\\generated_images\\01a20126-a1de-7042-907d-aaf5bd522f72\\exec-03aea308-498c-41a2-a053-86d602287997.png",
+    "prompt": "Create exactly ONE isolated transparent PNG sprite for Fabrica 404. Reference 1 is the mandatory scene style/camera, reference 2 is the new matched central conveyor. Clean sharp low-resolution pixel art, dark navy outlines, graphite, steel, restrained cyan, few flat tones, NO realistic textures, soft gradients, huge glow, lettering, UI, background, cast shadow or other assets. Make RIGHT lane version of image 2 open portal. Keep same mechanical design, proportions, pixel style, cyan header indicator, yellow-black inner frame, but very slight RIGHT-lane perspective from image 1: see a small amount of the left interior jamb. Front face remains near frontal, not isometric. Empty central opening fully transparent. Isolated whole portal centered in a square transparent canvas."
+  },
+  {
+    "name": "porta_fechada_central",
+    "path": "C:\\Users\\kauan\\.codex\\generated_images\\01a20126-a1de-7042-907d-aaf5bd522f72\\exec-a1fb9a0c-f0dd-477b-a30a-6046276917f1.png",
+    "prompt": "Create exactly ONE isolated transparent PNG sprite for Fabrica 404. Reference 1 is the mandatory scene style/camera, reference 2 is the new matched central conveyor. Clean sharp low-resolution pixel art, dark navy outlines, graphite, steel, restrained cyan, few flat tones, NO realistic textures, soft gradients, huge glow, lettering, UI, background, cast shadow or other assets. EDIT TARGET is image 2, the open central portal. Change ONLY its empty central opening: add two CLOSED dark graphite sliding metal leaves with a thin central seam. Preserve EXACTLY canvas size, margins, header, cyan light, both support columns, feet, pixels outside opening and their positions. No conveyor, surroundings or text. The exterior frame must register pixel-for-pixel with the open reference. Keep outside transparent."
+  },
+  {
+    "name": "produto_caixa",
+    "path": "C:\\Users\\kauan\\.codex\\generated_images\\01a20126-a1de-7042-907d-aaf5bd522f72\\exec-e0fc1b5c-cad4-4759-8e78-a651792f3c79.png",
+    "prompt": "Create exactly ONE isolated transparent PNG sprite for Fabrica 404. Reference 1 is the mandatory scene style/camera, reference 2 is the new matched central conveyor. Clean sharp low-resolution pixel art, dark navy outlines, graphite, steel, restrained cyan, few flat tones, NO realistic textures, soft gradients, huge glow, lettering, UI, background, cast shadow or other assets. Generate ONLY a single small cardboard shipping BOX matching the box in image 1: warm ochre/brown, flat front face, small visible top and right face, simple central packing tape. NO printed icons, markings, text or defects. Pixel-art inventory sprite matching the reference camera and limited shading. Whole box on genuine transparency, no shadow, no portal. Image 2 is only palette/outline style reference."
+  },
+  {
+    "name": "porta_aberta_esquerda",
+    "path": "C:\\Users\\kauan\\.codex\\generated_images\\01a20126-a1de-7042-907d-aaf5bd522f72\\exec-f67196d1-aa98-4640-acdb-a6cf57575977.png",
+    "prompt": "Create exactly ONE isolated transparent PNG sprite for Fabrica 404. Reference 1 is the mandatory scene style/camera, reference 2 is the new matched central conveyor. Clean sharp low-resolution pixel art, dark navy outlines, graphite, steel, restrained cyan, few flat tones, NO realistic textures, soft gradients, huge glow, lettering, UI, background, cast shadow or other assets. Make LEFT lane version of image 2 open portal. Keep same mechanical design, proportions, pixel style, cyan header indicator, yellow-black inner frame, but very slight LEFT-lane perspective from image 1: see a small amount of the right interior jamb. Front face remains near frontal, not isometric. Empty central opening fully transparent. Isolated whole portal centered in a square transparent canvas."
+  },
+  {
+    "name": "porta_fechada_esquerda",
+    "path": "C:\\Users\\kauan\\.codex\\generated_images\\01a20126-a1de-7042-907d-aaf5bd522f72\\exec-1deff8f1-685a-46b9-832d-12dd51617a38.png",
+    "prompt": "Create exactly ONE isolated transparent PNG sprite for Fabrica 404. Reference 1 is the mandatory scene style/camera, reference 2 is the new matched central conveyor. Clean sharp low-resolution pixel art, dark navy outlines, graphite, steel, restrained cyan, few flat tones, NO realistic textures, soft gradients, huge glow, lettering, UI, background, cast shadow or other assets.  Image 1 is the edit target/style reference. Edit ONLY the empty passage: add two CLOSED graphite sliding metal leaves, central seam and simple flat shading. EXACT same canvas, fixed support positions, header, cyan light, yellow-black frame, and pixels outside opening. Preserve the perspective. Entire outside transparent. Must overlay perfectly on open version."
+  },
+  {
+    "name": "produto_peca_mecanica",
+    "path": "C:\\Users\\kauan\\.codex\\generated_images\\01a20126-a1de-7042-907d-aaf5bd522f72\\exec-13d62d3b-1cbe-4c02-9e14-b79b6ad886e1.png",
+    "prompt": "Create exactly ONE isolated transparent PNG sprite for Fabrica 404. Reference 1 is the mandatory scene style/camera, reference 2 is the new matched central conveyor. Clean sharp low-resolution pixel art, dark navy outlines, graphite, steel, restrained cyan, few flat tones, NO realistic textures, soft gradients, huge glow, lettering, UI, background, cast shadow or other assets.  Image 1 is the edit target/style reference. One small steel mechanical part, a simple hexagonal nut with circular through-hole: dark steel-gray side faces, light steel upper face, restrained three-tone shading and navy outline. Same frontal slightly elevated game camera and clean small pixel-art style as products in reference, NOT isometric. No defects, markings, text, glow, background or cast shadow. Transparent through-hole and outside."
+  },
+  {
+    "name": "porta_fechada_direita",
+    "path": "C:\\Users\\kauan\\.codex\\generated_images\\01a20126-a1de-7042-907d-aaf5bd522f72\\exec-4a013cb2-a6bf-4690-85e8-6db1e0c7dd9e.png",
+    "prompt": "Create exactly ONE isolated transparent PNG sprite for Fabrica 404. Reference 1 is the mandatory scene style/camera, reference 2 is the new matched central conveyor. Clean sharp low-resolution pixel art, dark navy outlines, graphite, steel, restrained cyan, few flat tones, NO realistic textures, soft gradients, huge glow, lettering, UI, background, cast shadow or other assets.  Image 1 is the edit target/style reference. Edit ONLY the empty passage: add two CLOSED graphite sliding metal leaves, central seam and simple flat shading. EXACT same canvas, fixed support positions, header, cyan light, yellow-black frame, and pixels outside opening. Preserve the perspective. Entire outside transparent. Must overlay perfectly on open version."
+  },
+  {
+    "name": "produto_lata",
+    "path": "C:\\Users\\kauan\\.codex\\generated_images\\01a20126-a1de-7042-907d-aaf5bd522f72\\exec-e7d8cdd7-2ae6-4873-a675-ac5c36510eab.png",
+    "prompt": "Create exactly ONE isolated transparent PNG sprite for Fabrica 404. Reference 1 is the mandatory scene style/camera, reference 2 is the new matched central conveyor. Clean sharp low-resolution pixel art, dark navy outlines, graphite, steel, restrained cyan, few flat tones, NO realistic textures, soft gradients, huge glow, lettering, UI, background, cast shadow or other assets.  Image 1 is the edit target/style reference. One small can sprite matching the can on central conveyor in this reference: simple red cylinder, silver oval top and silver rim at bottom, small dark red side shading, NO label, words, branding, markings or defects. Frontal slightly elevated camera and clean small pixel-art shading. Isolated transparent alpha, no floor/shadow."
+  },
+  {
+    "name": "zona_inspecao_direita",
+    "path": "C:\\Users\\kauan\\.codex\\generated_images\\01a20126-a1de-7042-907d-aaf5bd522f72\\exec-4b981439-38d3-4b6b-a655-db63bcd35d25.png",
+    "prompt": "Use case: stylized-concept. One transparent PNG sprite only: a THIN cyan inspection outline that lies flat on the conveyor surface, matching the navy/graphite/cyan pixel art game reference. RIGHT lane, shallow perspective quadrilateral: top edge slightly shorter and shifted LEFT relative to horizontal bottom edge. Width about 4 times height. Simple sharp pixel-art 2-3 logical pixels thick, cyan line with a darker teal outside pixel, restrained brightness. ABSOLUTELY TRANSPARENT CENTER and outside; NO filled panel, conveyor, gray plate, yellow/black stripes, corners thicker than the line, text, glow, light bloom or background. A minimal ring only. Keep its entire shape inside canvas with transparent margin."
+  },
+  {
+    "name": "zona_inspecao_central",
+    "path": "C:\\Users\\kauan\\.codex\\generated_images\\01a20126-a1de-7042-907d-aaf5bd522f72\\exec-51b255e8-d7a1-4aab-9d70-945cabbf95a7.png",
+    "prompt": "Use case: stylized-concept. One transparent PNG sprite only: a THIN cyan inspection outline that lies flat on the conveyor surface, matching the navy/graphite/cyan pixel art game reference. CENTRAL lane, symmetric shallow trapezoid: horizontal top edge slightly shorter than horizontal bottom edge. Width about 4 times height. Simple sharp pixel-art 2-3 logical pixels thick, cyan line with a darker teal outside pixel, restrained brightness. ABSOLUTELY TRANSPARENT CENTER and outside; NO filled panel, conveyor, gray plate, yellow/black stripes, corners thicker than the line, text, glow, light bloom or background. A minimal ring only. Keep its entire shape inside canvas with transparent margin."
+  },
+  {
+    "name": "zona_inspecao_esquerda",
+    "path": "C:\\Users\\kauan\\.codex\\generated_images\\01a20126-a1de-7042-907d-aaf5bd522f72\\exec-c36cd283-151b-45e8-b4f5-42c220faf90b.png",
+    "prompt": "Use case: stylized-concept. One transparent PNG sprite only: a THIN cyan inspection outline that lies flat on the conveyor surface, matching the navy/graphite/cyan pixel art game reference. LEFT lane, shallow perspective quadrilateral: top edge slightly shorter and shifted RIGHT relative to horizontal bottom edge. Width about 4 times height. Simple sharp pixel-art 2-3 logical pixels thick, cyan line with a darker teal outside pixel, restrained brightness. ABSOLUTELY TRANSPARENT CENTER and outside; NO filled panel, conveyor, gray plate, yellow/black stripes, corners thicker than the line, text, glow, light bloom or background. A minimal ring only. Keep its entire shape inside canvas with transparent margin."
+  },
+  {
+    "name": "produto_garrafa",
+    "path": "C:\\Users\\kauan\\.codex\\generated_images\\01a20126-a1de-7042-907d-aaf5bd522f72\\exec-80a088bf-9adb-4fca-95a1-41f553729981.png",
+    "prompt": "Edit this bottle sprite only. REMOVE the entire blue glow/halo, replacing ALL pixels outside the sharp dark outline with fully transparent alpha. Remove both horizontal blue decorative bands: make body plain ivory/light blue with only three flat shading tones, NO label or marks. Keep the same bottle shape, blue cap, proportions and camera, pixel-art stepped silhouette. No background, no shadow, no blur, no glow. Clean isolated game sprite."
+  }
+]

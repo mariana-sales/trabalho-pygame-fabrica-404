@@ -1,0 +1,68 @@
+{
+  "tamanho": [
+    800,
+    600
+  ],
+  "fundo": [
+    13,
+    25,
+    36
+  ],
+  "camadas": [
+    {
+      "arquivo": "sprites/porta_aberta_esquerda.png",
+      "x": 234,
+      "y": 168
+    },
+    {
+      "arquivo": "sprites/esteira_esquerda.png",
+      "x": 163,
+      "y": 266
+    },
+    {
+      "arquivo": "sprites/zona_inspecao_esquerda.png",
+      "x": 191,
+      "y": 391
+    },
+    {
+      "arquivo": "sprites/porta_aberta_central.png",
+      "x": 348,
+      "y": 168
+    },
+    {
+      "arquivo": "sprites/esteira_central.png",
+      "x": 317,
+      "y": 266
+    },
+    {
+      "arquivo": "sprites/zona_inspecao_central.png",
+      "x": 351,
+      "y": 392
+    },
+    {
+      "arquivo": "sprites/porta_aberta_direita.png",
+      "x": 480,
+      "y": 168
+    },
+    {
+      "arquivo": "sprites/esteira_direita.png",
+      "x": 478,
+      "y": 266
+    },
+    {
+      "arquivo": "sprites/zona_inspecao_direita.png",
+      "x": 511,
+      "y": 390
+    },
+    {
+      "arquivo": "sprites/produto_caixa.png",
+      "x": 377,
+      "y": 366
+    },
+    {
+      "arquivo": "sprites/inspetor.png",
+      "x": 377,
+      "y": 460
+    }
+  ]
+}
