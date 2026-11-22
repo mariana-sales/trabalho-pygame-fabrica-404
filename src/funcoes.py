@@ -140,6 +140,11 @@ def produto_passou_da_zona(pos_produto, fim_da_zona):
     return pos_produto > fim_da_zona
 
 
+def mover_produto(pos_produto, velocidade, pos_limite):
+    """Avança o produto pela esteira sem ultrapassar pos_limite."""
+    return min(pos_produto + velocidade, pos_limite)
+
+
 def avaliar_decisao(produto, decisao):
     """Compara a decisão (ou None) com a resposta correta e devolve o resultado."""
     correta = resposta_correta(produto)

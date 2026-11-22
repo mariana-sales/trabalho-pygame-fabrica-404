@@ -8,13 +8,15 @@ from src.config import (
     CINZA,
     CAMINHO_RECORDE,
     NUM_FAIXAS,
+    FASE_JOGANDO,
     FAIXAS_X,
     ZONA_Y,
     ZONA_ALTURA,
     LARGURA_PRODUTO,
     ALTURA_PRODUTO,
+    VELOCIDADE_ESTEIRA,
 )
-from src.funcoes import criar_estado, mover_faixa
+from src.funcoes import criar_estado, mover_faixa, mover_produto
 from src.desenho import criar_fontes, desenhar_jogo
 from src.dados import carregar_recorde
 
@@ -42,6 +44,16 @@ def processar_eventos(estado, zona):
                 estado["faixa_inspetor"] = mover_faixa(estado["faixa_inspetor"], 1, NUM_FAIXAS)
     return True
 
+
+def atualizar(estado, recorde_caminho, zona):
+    """Atualiza o estado a cada quadro. Por enquanto, só move o produto."""
+    if estado["fase"] == FASE_JOGANDO:
+        pos_parada = ZONA_Y + ZONA_ALTURA - ALTURA_PRODUTO
+        estado["pos_produto"] = mover_produto(
+            estado["pos_produto"], VELOCIDADE_ESTEIRA, pos_parada
+        )
+
+
 def executar_jogo():
     """Executa o loop principal do jogo."""
     pygame.init()
@@ -63,7 +75,8 @@ def executar_jogo():
     while rodando:
         relogio.tick(FPS)
         rodando = processar_eventos(estado, zona)
-
+        atualizar(estado, CAMINHO_RECORDE, zona)
+        
         tela.fill(CINZA)
         desenhar_jogo(tela, fontes, estado, zona, rect_do_produto(estado))
         pygame.display.flip()
