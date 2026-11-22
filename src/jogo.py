@@ -8,8 +8,11 @@ from src.config import (
     CINZA,
     CAMINHO_RECORDE,
     NUM_FAIXAS,
+    TOTAL_PRODUTOS,
+    LIMITE_ERROS,
     FASE_JOGANDO,
     FASE_FEEDBACK,
+    FASE_FIM,
     DURACAO_FEEDBACK,
     FAIXAS_X,
     ZONA_Y,
@@ -26,6 +29,8 @@ from src.funcoes import (
     pode_decidir,
     avaliar_decisao,
     aplicar_resultado,
+    avancar_produto,
+    verificar_desfecho,
 )
 
 from src.funcoes import criar_estado, mover_faixa, mover_produto
@@ -71,10 +76,11 @@ def processar_eventos(estado, zona):
         if evento.type == pygame.KEYDOWN:
             if evento.key == pygame.K_ESCAPE:
                 return False
-            if evento.key == pygame.K_LEFT:
-                estado["faixa_inspetor"] = mover_faixa(estado["faixa_inspetor"], -1, NUM_FAIXAS)
-            if evento.key == pygame.K_RIGHT:
-                estado["faixa_inspetor"] = mover_faixa(estado["faixa_inspetor"], 1, NUM_FAIXAS)
+            if estado["fase"] == FASE_JOGANDO:
+                if evento.key == pygame.K_LEFT:
+                    estado["faixa_inspetor"] = mover_faixa(estado["faixa_inspetor"], -1, NUM_FAIXAS)
+                if evento.key == pygame.K_RIGHT:
+                    estado["faixa_inspetor"] = mover_faixa(estado["faixa_inspetor"], 1, NUM_FAIXAS)
             if evento.key == pygame.K_a:
                 tentar_decidir(estado, "aprovar", zona)
             if evento.key == pygame.K_r:
@@ -83,12 +89,25 @@ def processar_eventos(estado, zona):
 
 
 def atualizar(estado, recorde_caminho, zona):
-    """Atualiza o estado a cada quadro. Por enquanto, só move o produto."""
+    """Atualiza o estado a cada quadro: move o produto ou conta a pausa do feedback."""
     if estado["fase"] == FASE_JOGANDO:
         pos_parada = ZONA_Y + ZONA_ALTURA - ALTURA_PRODUTO
         estado["pos_produto"] = mover_produto(
             estado["pos_produto"], VELOCIDADE_ESTEIRA, pos_parada
         )
+
+    elif estado["fase"] == FASE_FEEDBACK:
+        estado["frames_feedback"] -= 1
+        if estado["frames_feedback"] <= 0:
+            concluidos = estado["indice"] + 1
+            desfecho = verificar_desfecho(
+                estado["erros"], concluidos, TOTAL_PRODUTOS, LIMITE_ERROS
+            )
+            if desfecho is None:
+                avancar_produto(estado)
+            else:
+                estado["desfecho"] = desfecho
+                estado["fase"] = FASE_FIM
 
 
 def executar_jogo():
