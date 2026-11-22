@@ -11,7 +11,10 @@
 
 import random
 
-from src.config import DEFEITOS, NOMES_PRODUTOS, NUM_FAIXAS
+from src.config import (
+    DEFEITOS, FASE_JOGANDO, NOMES_PRODUTOS, NUM_FAIXAS, PONTOS_POR_ACERTO,
+    QTD_DEFEITUOSOS, QTD_ERROS_IA, TOTAL_PRODUTOS, Y_INICIO_ESTEIRA,
+)
 
 def calcular_pontos(pontos_atual, pontos_ganhos):
     """Soma os pontos ganhos à pontuação atual."""
@@ -103,13 +106,21 @@ def ia_acertou(produto):
 
 
 def criar_estado(recorde):
-    """Estado de uma partida nova (provisório: um produto fixo)."""
-    produto = {"nome": "Caixa", "faixa": 1, "defeitos": [], "recomendacao_ia": "aprovar"}
+    """Estado de uma partida nova."""
     return {
-        "fase": "jogando", "produtos": [produto], "indice": 0, "pos_produto": 0,
-        "faixa_inspetor": 1, "pontos": 0, "erros": 0, "ia_errou": 0,
-        "ia_corrigida": 0, "resultado": None, "frames_feedback": 0,
-        "desfecho": None, "recorde": recorde,
+        "fase": FASE_JOGANDO,
+        "produtos": gerar_produtos(TOTAL_PRODUTOS, QTD_DEFEITUOSOS, QTD_ERROS_IA),
+        "indice": 0,
+        "pos_produto": Y_INICIO_ESTEIRA,
+        "faixa_inspetor": NUM_FAIXAS // 2,
+        "pontos": 0,
+        "erros": 0,
+        "ia_errou": 0,
+        "ia_corrigida": 0,
+        "resultado": None,
+        "frames_feedback": 0,
+        "desfecho": None,
+        "recorde": recorde,
     }
 
 
@@ -146,12 +157,23 @@ def avaliar_decisao(produto, decisao):
 
 def aplicar_resultado(estado, resultado):
     """Atualiza pontos, erros, ia_errou e ia_corrigida no estado."""
-    pass
+    if resultado["jogador_acertou"]:
+        estado["pontos"] = calcular_pontos(estado["pontos"], PONTOS_POR_ACERTO)
+    else:
+        estado["erros"] += 1
+
+    if not resultado["ia_acertou"]:
+        estado["ia_errou"] += 1
+
+    if resultado["ia_corrigida"]:
+        estado["ia_corrigida"] += 1
 
 
 def avancar_produto(estado):
     """Passa para o próximo produto e volta a fase para 'jogando'."""
-    pass
+    estado["indice"] += 1
+    estado["pos_produto"] = Y_INICIO_ESTEIRA
+    estado["fase"] = FASE_JOGANDO
 
 
 def partida_perdida(erros, limite_erros):
