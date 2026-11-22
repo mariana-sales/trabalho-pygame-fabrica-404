@@ -9,6 +9,10 @@
 # estado:    fase, produtos, indice, pos_produto, faixa_inspetor, pontos, erros,
 #            ia_errou, ia_corrigida, resultado, frames_feedback, desfecho, recorde
 
+import random
+
+from src.config import DEFEITOS, NOMES_PRODUTOS, NUM_FAIXAS
+
 def calcular_pontos(pontos_atual, pontos_ganhos):
     """Soma os pontos ganhos à pontuação atual."""
     return pontos_atual + pontos_ganhos
@@ -41,32 +45,61 @@ def verificar_colisao(retangulo_1, retangulo_2):
 
 def sortear_indices(total, quantidade):
     """Devolve 'quantidade' posições diferentes entre 0 e total-1."""
-    return list(range(quantidade))
+    return random.sample(range(total), quantidade)
 
 
 def sortear_defeitos():
     """Devolve uma lista de 1 a 3 códigos de defeito diferentes."""
-    return []
+    quantidade = random.randint(1, min(3, len(DEFEITOS)))
+    return random.sample(list(DEFEITOS), quantidade)
 
 
 def inverter_recomendacao(recomendacao):
     """Troca 'aprovar' por 'rejeitar' e vice-versa."""
-    return recomendacao
+    if recomendacao == "aprovar":
+        return "rejeitar"
+    return "aprovar"
 
 
 def gerar_produtos(total, qtd_defeituosos, qtd_erros_ia):
     """Monta a lista de produtos da partida."""
-    return []
+    posicoes_defeituosas = sortear_indices(total, qtd_defeituosos)
+    posicoes_ia_erra = sortear_indices(total, qtd_erros_ia)
+
+    produtos = []
+    for i in range(total):
+        if i in posicoes_defeituosas:
+            defeitos = sortear_defeitos()
+        else:
+            defeitos = []
+
+        produto = {
+            "nome": random.choice(NOMES_PRODUTOS),
+            "faixa": random.randint(0, NUM_FAIXAS - 1),
+            "defeitos": defeitos,
+            "recomendacao_ia": None,
+        }
+
+        correta = resposta_correta(produto)
+        if i in posicoes_ia_erra:
+            produto["recomendacao_ia"] = inverter_recomendacao(correta)
+        else:
+            produto["recomendacao_ia"] = correta
+
+        produtos.append(produto)
+    return produtos
 
 
 def resposta_correta(produto):
     """Sem defeitos: 'aprovar'. Com defeito: 'rejeitar'."""
+    if produto["defeitos"]:
+        return "rejeitar"
     return "aprovar"
 
 
 def ia_acertou(produto):
     """True se a recomendação da IA é a resposta correta."""
-    return True
+    return produto["recomendacao_ia"] == resposta_correta(produto)
 
 
 def criar_estado(recorde):
