@@ -183,16 +183,20 @@ def avancar_produto(estado):
 
 def partida_perdida(erros, limite_erros):
     """True se os erros chegaram ao limite."""
-    return False
+    return erros >= limite_erros
 
 
 def partida_vencida(erros, concluidos, total, limite_erros):
     """True se todos os produtos foram concluídos com erros abaixo do limite."""
-    return False
+    return concluidos >= total and erros < limite_erros
 
 
 def verificar_desfecho(erros, concluidos, total, limite_erros):
     """Devolve None, 'vitoria' ou 'derrota' (a derrota tem prioridade)."""
+    if partida_perdida(erros, limite_erros):
+        return "derrota"
+    if partida_vencida(erros, concluidos, total, limite_erros):
+        return "vitoria"
     return None
 
 
