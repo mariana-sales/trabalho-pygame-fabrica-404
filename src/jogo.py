@@ -33,7 +33,6 @@ from src.funcoes import (
     verificar_desfecho,
 )
 
-from src.funcoes import criar_estado, mover_faixa, mover_produto
 from src.desenho import criar_fontes, desenhar_jogo
 from src.dados import carregar_recorde
 
