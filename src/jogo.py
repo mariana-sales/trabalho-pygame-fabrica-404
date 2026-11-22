@@ -34,7 +34,7 @@ from src.funcoes import (
 )
 
 from src.desenho import criar_fontes, desenhar_jogo
-from src.dados import carregar_recorde
+from src.dados import carregar_recorde, salvar_recorde
 
 
 def rect_do_produto(estado):
@@ -84,6 +84,10 @@ def processar_eventos(estado, zona):
                 tentar_decidir(estado, "aprovar", zona)
             if evento.key == pygame.K_r:
                 tentar_decidir(estado, "rejeitar", zona)
+            if evento.key == pygame.K_RETURN and estado["fase"] == FASE_FIM:
+                novo = criar_estado(estado["recorde"])
+                estado.clear()
+                estado.update(novo)
     return True
 
 
@@ -107,6 +111,9 @@ def atualizar(estado, recorde_caminho, zona):
             else:
                 estado["desfecho"] = desfecho
                 estado["fase"] = FASE_FIM
+                if estado["pontos"] > estado["recorde"]:
+                    estado["recorde"] = estado["pontos"]
+                    salvar_recorde(recorde_caminho, estado["recorde"])
 
 
 def executar_jogo():
