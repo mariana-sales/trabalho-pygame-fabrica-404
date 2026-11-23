@@ -179,6 +179,8 @@ def avancar_produto(estado):
     estado["indice"] += 1
     estado["pos_produto"] = Y_INICIO_ESTEIRA
     estado["fase"] = FASE_JOGANDO
+    estado["resultado"] = None
+    estado["frames_feedback"] = 0
 
 
 def partida_perdida(erros, limite_erros):

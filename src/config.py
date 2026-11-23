@@ -34,20 +34,20 @@ DEFEITOS = {
 }
 
 # --- Layout e cores ---  (Kauan)
-# Valores provisórios: o Kauan ajusta pela arte.
-FAIXAS_X = (230, 310, 390)      # centro horizontal de cada faixa
-ZONA_Y = 480
-ZONA_ALTURA = 250
-Y_INICIO_ESTEIRA = 0
-LARGURA_PRODUTO = 60
-ALTURA_PRODUTO = 50
-Y_INSPETOR = 740
+# Coordenadas lógicas do cenário aprovado em 800 × 600.
+FAIXAS_X = (242, 400, 558)      # eixos retos alinhados ao fundo que preenche 800 × 600
+PORTAS_X = FAIXAS_X
+Y_FIM_ESTEIRA = 452
+ZONA_Y = 390
+ZONA_ALTURA = 30
+Y_INICIO_ESTEIRA = 250         # produto surge dentro do vão escuro
+LARGURA_PRODUTO = 46
+ALTURA_PRODUTO = 42
+Y_INSPETOR = 568
+ALTURA_INSPETOR = 132
 VELOCIDADE_ESTEIRA = 1.7        # pixels por quadro
 DURACAO_FEEDBACK = 120          # quadros (2 s a 60 FPS)
 
-BRANCO = (255, 255, 255)
-PRETO = (0, 0, 0)
-CINZA = (212, 212, 212)
 # Novas cores (Kauan define; estes são valores de partida)
 COR_ESTEIRA = (71, 85, 105)
 COR_ZONA = (245, 166, 35)
@@ -55,3 +55,10 @@ COR_INSPETOR = (234, 88, 12)
 COR_PRODUTO = (217, 174, 114)
 COR_ACERTO = (22, 163, 74)
 COR_ERRO = (220, 38, 38)
+
+# Transporte: coordenadas lógicas e velocidade equivalente a 1,7 px/frame a 60 FPS.
+# Até um produto no tamanho máximo já passou inteiro antes de tocar a zona.
+Y_PASSAGEM_PORTA = ZONA_Y - ALTURA_PRODUTO
+Y_BASE_PORTAS = Y_PASSAGEM_PORTA + 34  # margem transparente do canvas de 150 px
+Y_PARADA_PRODUTO = ZONA_Y + ZONA_ALTURA - ALTURA_PRODUTO
+VELOCIDADE_TRANSPORTE = VELOCIDADE_ESTEIRA * FPS

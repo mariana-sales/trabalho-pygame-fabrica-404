@@ -1,3 +1,4 @@
+from pathlib import Path
 import pygame
 
 from src.config import (
@@ -14,17 +15,12 @@ from src.config import (
     FASE_FEEDBACK,
     FASE_FIM,
     DURACAO_FEEDBACK,
-    FAIXAS_X,
     ZONA_Y,
     ZONA_ALTURA,
-    LARGURA_PRODUTO,
-    ALTURA_PRODUTO,
-    VELOCIDADE_ESTEIRA,
 )
 from src.funcoes import (
     criar_estado,
     mover_faixa,
-    mover_produto,
     verificar_colisao,
     pode_decidir,
     avaliar_decisao,
@@ -35,15 +31,17 @@ from src.funcoes import (
 
 from src.desenho import criar_fontes, desenhar_jogo
 from src.dados import carregar_recorde, salvar_recorde
+from src.transporte import avancar_transporte, rect_produto
+
+
+def criar_zona():
+    """Zona lógica larga o suficiente para as três marcações de inspeção."""
+    return pygame.Rect(0, ZONA_Y, LARGURA_TELA, ZONA_ALTURA)
 
 
 def rect_do_produto(estado):
     """Monta o retângulo do produto atual a partir da posição no estado."""
-    produto = estado["produtos"][estado["indice"]]
-    retangulo = pygame.Rect(0, 0, LARGURA_PRODUTO, ALTURA_PRODUTO)
-    retangulo.centerx = FAIXAS_X[produto["faixa"]]
-    retangulo.y = int(estado["pos_produto"])
-    return retangulo
+    return rect_produto(estado)
 
 
 def tentar_decidir(estado, decisao, zona):
@@ -91,17 +89,15 @@ def processar_eventos(estado, zona):
     return True
 
 
-def atualizar(estado, recorde_caminho, zona):
-    """Atualiza o estado a cada quadro: move o produto ou conta a pausa do feedback."""
+def atualizar(estado, recorde_caminho, zona, delta_s=1 / FPS):
+    """Move com delta time; feedback conta de DURACAO_FEEDBACK até zero."""
     if estado["fase"] == FASE_JOGANDO:
-        pos_parada = ZONA_Y + ZONA_ALTURA - ALTURA_PRODUTO
-        estado["pos_produto"] = mover_produto(
-            estado["pos_produto"], VELOCIDADE_ESTEIRA, pos_parada
-        )
+        estado["pos_produto"] = avancar_transporte(estado["pos_produto"], delta_s)
 
     elif estado["fase"] == FASE_FEEDBACK:
-        estado["frames_feedback"] -= 1
-        if estado["frames_feedback"] <= 0:
+        estado["frames_feedback"] = max(0, estado["frames_feedback"] - max(0, delta_s) * FPS)
+        if estado["frames_feedback"] <= 1e-8:
+            estado["frames_feedback"] = 0
             concluidos = estado["indice"] + 1
             desfecho = verificar_desfecho(
                 estado["erros"], concluidos, TOTAL_PRODUTOS, LIMITE_ERROS
@@ -112,35 +108,35 @@ def atualizar(estado, recorde_caminho, zona):
                 estado["desfecho"] = desfecho
                 estado["fase"] = FASE_FIM
                 if estado["pontos"] > estado["recorde"]:
+                    Path(recorde_caminho).parent.mkdir(parents=True, exist_ok=True)
+                    salvar_recorde(recorde_caminho, estado["pontos"])
                     estado["recorde"] = estado["pontos"]
-                    salvar_recorde(recorde_caminho, estado["recorde"])
 
 
 def executar_jogo():
     """Executa o loop principal do jogo."""
     pygame.init()
+    try:
+        tela = pygame.display.set_mode((LARGURA_TELA, ALTURA_TELA))
+        pygame.display.set_caption(TITULO_JOGO)
+        relogio = pygame.time.Clock()
+        fontes = criar_fontes()
+        zona = criar_zona()
+        caminho = Path(__file__).resolve().parents[1] / CAMINHO_RECORDE
+        estado = criar_estado(carregar_recorde(caminho))
+        while True:
+            delta_s = relogio.tick(FPS) / 1000
+            if not processar_eventos(estado, zona):
+                break
+            atualizar(estado, caminho, zona, delta_s)
+            estado["controles"] = ("Enter: nova partida | Esc: sair" if estado["fase"] == FASE_FIM
+                                  else "← → faixa | A: aprovar | R: rejeitar")
+            tela.fill(CINZA)
+            desenhar_jogo(tela, fontes, estado, zona, rect_do_produto(estado))
+            pygame.display.flip()
+    finally:
+        pygame.quit()
 
-    tela = pygame.display.set_mode((LARGURA_TELA, ALTURA_TELA))
-    pygame.display.set_caption(TITULO_JOGO)
-    relogio = pygame.time.Clock()
 
-    fontes = criar_fontes()
-    zona = pygame.Rect(
-        FAIXAS_X[0] - LARGURA_PRODUTO // 2,
-        ZONA_Y,
-        FAIXAS_X[-1] - FAIXAS_X[0] + LARGURA_PRODUTO,
-        ZONA_ALTURA,
-    )
-    estado = criar_estado(carregar_recorde(CAMINHO_RECORDE))
-
-    rodando = True
-    while rodando:
-        relogio.tick(FPS)
-        rodando = processar_eventos(estado, zona)
-        atualizar(estado, CAMINHO_RECORDE, zona)
-        
-        tela.fill(CINZA)
-        desenhar_jogo(tela, fontes, estado, zona, rect_do_produto(estado))
-        pygame.display.flip()
-
-    pygame.quit()
+if __name__ == "__main__":
+    executar_jogo()
