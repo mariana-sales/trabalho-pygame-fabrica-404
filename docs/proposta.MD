@@ -1,6 +1,6 @@
 # Proposta Inicial do Jogo
 
-## 1. Nome provisório do jogo
+## 1. Nome do Jogo
 
 **Nome:**
 
@@ -31,9 +31,9 @@ Arcade de classificação com tomada de decisão: o jogador movimenta um persona
 
 **Descrição:**
 
-A tela mostra uma fábrica com uma esteira dividida em três faixas horizontais, uma área de inspeção à direita, um painel com as características do produto atual e as informações da partida (pontos, erros e progresso). O jogador controla um inspetor que se move verticalmente entre as faixas.
+A tela mostra uma fábrica em perspectiva, com três esteiras paralelas posicionadas lado a lado, uma área de inspeção, um painel com as características do produto atual e as informações da partida (pontos, erros e progresso). O jogador controla um inspetor que se move horizontalmente entre as três faixas.
 
-Um produto por vez surge em uma faixa aleatória e avança pela esteira. Cada produto tem características que indicam se está adequado ou defeituoso (por exemplo, embalagem amassada, etiqueta incompleta ou código ilegível). A IA simulada recomenda aprovar ou rejeitar, e essa recomendação pode estar errada. O jogador precisa estar na mesma faixa do produto quando ele chegar à área de inspeção e decidir antes que ele saia.
+Um produto por vez surge em uma faixa aleatória e avança pela esteira. Cada produto tem características que indicam se está adequado ou defeituoso (por exemplo, embalagem amassada, etiqueta incompleta ou código ilegível). A IA simulada recomenda aprovar ou rejeitar, e essa recomendação pode estar errada. O jogador precisa estar na mesma faixa do produto quando ele chegar à área de inspeção, onde ele para e aguarda a decisão do jogador.
 
 Exemplo: o produto 4 chega na faixa 2 com embalagem amassada, etiqueta incompleta e código ilegível, mas a IA recomenda aprovar. A decisão correta é rejeitar.
 
@@ -74,7 +74,7 @@ O jogador perde ao cometer o 3º erro. A partida também se encerra quando os 10
 
 **Controles:**
 
-- Seta para cima / seta para baixo: mover o inspetor entre as faixas.
+- Seta para esquerda / seta para direita: mover o inspetor entre as faixas.
 - Tecla A: aprovar o produto.
 - Tecla R: rejeitar o produto.
 - Tecla ESC: sair do jogo.
