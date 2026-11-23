@@ -73,9 +73,4 @@ A área dianteira e seus roletes permanecem imóveis; apenas o trecho anterior
 
 ## Pendências preservadas
 
-Não foi criado um prazo automático de inspeção. O contrato de decisão None e
-seu feedback estão testados, mas não são disparados automaticamente pelo loop.
-A remoção das funções antigas tomar_dano, jogador_perdeu e produto_passou_da_zona
-fica para A10, conforme o plano. Os testes atuais não importam jogador_perdeu.
-As constantes de cor duplicadas foram removidas. A11 pode ajustar os valores
-finais após a avaliação da equipe, sem alterar as regras de 10/5/4 e três erros.
+Não foi criado um prazo automático de inspeção. O contrato de decisão `None` e seu feedback estão testados, mas não são disparados automaticamente pelo loop.
