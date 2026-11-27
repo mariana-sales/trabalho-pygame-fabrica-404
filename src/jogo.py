@@ -14,35 +14,30 @@ from src.config import (
     NUM_FAIXAS,
     LIMITE_ERROS,
     FASE_JOGANDO,
-    FASE_FEEDBACK,
     FASE_FIM,
     FASE_MENU,
     FASE_CONCLUIDA,
-    DURACAO_FEEDBACK,
+    DURACAO_MENSAGEM_RESULTADO,
     ZONA_Y,
     ZONA_ALTURA,
 )
 from src.funcoes import (
-    criar_estado,
     criar_estado_menu,
     iniciar_modo,
     configurar_fase,
     gerar_produto_infinito,
+    liberar_proximo_produto,
     parametros_dificuldade,
     mover_faixa,
     verificar_colisao,
     pode_decidir,
     avaliar_decisao,
     aplicar_resultado,
-    avancar_produto,
-    verificar_desfecho,
-    contar_prazo_chegada,
-    contar_prazo_decisao
 )
 
 from src.desenho import criar_fontes, desenhar_jogo
 from src.dados import carregar_recorde, salvar_recorde
-from src.transporte import avancar_transporte, rect_produto
+from src.transporte import avancar_transporte, rect_produto, rect_produto_ativo
 
 
 def criar_zona():
@@ -56,24 +51,33 @@ def rect_do_produto(estado):
 
 
 def tentar_decidir(estado, decisao, zona):
-    """Aprova ou rejeita o produto atual, se o jogador puder decidir agora."""
+    """Decide sobre o produto na faixa do inspetor, se ele estiver na zona."""
     if estado["fase"] != FASE_JOGANDO:
         return
+    for ativo in estado.get("produtos_ativos", []):
+        produto = ativo["produto"]
+        produto_na_zona = verificar_colisao(rect_produto_ativo(ativo), zona)
+        if pode_decidir(estado["faixa_inspetor"], produto["faixa"], produto_na_zona):
+            finalizar_produto(estado, ativo, avaliar_decisao(produto, decisao))
+            return
 
-    produto = estado["produtos"][estado["indice"]]
-    produto_na_zona = verificar_colisao(rect_do_produto(estado), zona)
 
-    if pode_decidir(estado["faixa_inspetor"], produto["faixa"], produto_na_zona):
-        resultado = avaliar_decisao(produto, decisao)
-        finalizar_produto(estado, resultado)
-
-
-def finalizar_produto(estado, resultado):
-    """Registra o resultado da decisão e entra na fase de feedback."""
+def finalizar_produto(estado, ativo, resultado):
+    """Registra o resultado individual sem interromper os demais produtos."""
+    produto = ativo["produto"]
     aplicar_resultado(estado, resultado)
     estado["resultado"] = resultado
-    estado["fase"] = FASE_FEEDBACK
-    estado["frames_feedback"] = DURACAO_FEEDBACK
+    estado["produto_feedback"] = produto
+    estado["feedback_mensagem"] = (
+        "Tempo esgotado: produto não inspecionado" if resultado["decisao"] is None
+        else "Inspeção correta" if resultado["jogador_acertou"]
+        else "Inspeção incorreta"
+    )
+    estado["feedback_temporizador"] = DURACAO_MENSAGEM_RESULTADO
+    estado["produtos_ativos"].remove(ativo)
+    estado["produtos_concluidos"] = estado.get("produtos_concluidos", 0) + 1
+    estado["indice"] = estado["produtos_concluidos"]
+    estado["produtos_concluidos_delta"] = estado.get("produtos_concluidos_delta", 0) + 1
 
 
 def processar_eventos(estado, zona):
@@ -121,56 +125,79 @@ def processar_eventos(estado, zona):
 
 
 def atualizar(estado, recorde_caminho, zona, delta_s=1 / FPS):
-    """Move com delta time; feedback conta de DURACAO_FEEDBACK até zero."""
-    if estado["fase"] == FASE_JOGANDO:
-        estado["pos_produto"] = avancar_transporte(
-            estado["pos_produto"], delta_s, estado.get("multiplicador_velocidade", 1.0))
-        if verificar_colisao(rect_do_produto(estado), zona):
-            produto = estado["produtos"][estado["indice"]]
+    """Atualiza cada esteira e o prazo individual de cada produto ativo."""
+    delta_s = max(0, delta_s)
+    estado["feedback_temporizador"] = max(
+        0, estado.get("feedback_temporizador", 0) - delta_s)
+    if estado["feedback_temporizador"] <= 0:
+        estado["feedback_mensagem"] = None
 
-            if estado["chegou"]:
-                esgotou = contar_prazo_decisao(estado, delta_s)
-            else:
-                na_faixa = estado["faixa_inspetor"] == produto["faixa"]
-                esgotou = contar_prazo_chegada(estado, na_faixa, delta_s)
+    if estado["fase"] != FASE_JOGANDO:
+        return
 
-            if esgotou:
-                finalizar_produto(estado, avaliar_decisao(produto, None))
+    velocidade = estado.get("multiplicador_velocidade", 1.0)
+    for ativo in list(estado.get("produtos_ativos", [])):
+        ativo["pos_y"] = avancar_transporte(ativo["pos_y"], delta_s, velocidade)
+        if not verificar_colisao(rect_produto_ativo(ativo), zona):
+            continue
 
-    elif estado["fase"] == FASE_FEEDBACK:
-        estado["frames_feedback"] = max(0, estado["frames_feedback"] - max(0, delta_s) * FPS)
-        if estado["frames_feedback"] <= 1e-8:
-            estado["frames_feedback"] = 0
-            concluidos = estado["indice"] + 1
-            estado["produtos_concluidos"] = estado.get("produtos_concluidos", 0) + 1
-            if estado["erros"] >= LIMITE_ERROS:
-                estado["desfecho"] = "derrota"
-                estado["fase"] = FASE_FIM
-                if estado["pontos"] > estado["recorde"]:
-                    Path(recorde_caminho).parent.mkdir(parents=True, exist_ok=True)
-                    salvar_recorde(recorde_caminho, estado["pontos"])
-                    estado["recorde"] = estado["pontos"]
-                return
+        na_faixa = estado["faixa_inspetor"] == ativo["produto"]["faixa"]
+        if not ativo["chegou"] and na_faixa:
+            ativo["chegou"] = True
+        if ativo["chegou"]:
+            ativo["tempo_decisao"] -= delta_s
+            esgotou = ativo["tempo_decisao"] <= 1e-8
+        else:
+            ativo["tempo_chegada"] -= delta_s
+            esgotou = ativo["tempo_chegada"] <= 1e-8
 
-            if estado.get("modo") == MODO_INFINITO:
-                estado["proximo_aumento"] -= 1
-                if estado["proximo_aumento"] <= 0:
-                    estado["nivel_dificuldade"] += 1
-                    tempo, velocidade = parametros_dificuldade(estado["nivel_dificuldade"])
-                    estado["tempo_decisao_base"] = tempo
-                    estado["multiplicador_velocidade"] = velocidade
-                    estado["proximo_aumento"] = random.randint(5, 8)
-                if estado["indice"] + 1 >= len(estado["produtos"]):
-                    estado["produtos"].append(gerar_produto_infinito())
-                avancar_produto(estado)
-            elif concluidos >= len(estado["produtos"]):
-                estado["fase"] = FASE_CONCLUIDA
-                if estado["pontos"] > estado["recorde"]:
-                    Path(recorde_caminho).parent.mkdir(parents=True, exist_ok=True)
-                    salvar_recorde(recorde_caminho, estado["pontos"])
-                    estado["recorde"] = estado["pontos"]
-            else:
-                avancar_produto(estado)
+        if esgotou:
+            finalizar_produto(estado, ativo,
+                              avaliar_decisao(ativo["produto"], None))
+        if estado["erros"] >= LIMITE_ERROS:
+            estado["desfecho"] = "derrota"
+            estado["fase"] = FASE_FIM
+            break
+
+    if estado["erros"] >= LIMITE_ERROS:
+        estado["desfecho"] = "derrota"
+        estado["fase"] = FASE_FIM
+
+    if estado["fase"] == FASE_FIM:
+        if estado["pontos"] > estado["recorde"]:
+            Path(recorde_caminho).parent.mkdir(parents=True, exist_ok=True)
+            salvar_recorde(recorde_caminho, estado["pontos"])
+            estado["recorde"] = estado["pontos"]
+        return
+
+    if estado.get("modo") == MODO_INFINITO:
+        concluidos = estado.pop("produtos_concluidos_delta", 0)
+        estado["proximo_aumento"] -= concluidos
+        if estado["proximo_aumento"] <= 0:
+            estado["nivel_dificuldade"] += 1
+            tempo, velocidade = parametros_dificuldade(estado["nivel_dificuldade"])
+            estado["tempo_decisao_base"] = tempo
+            estado["multiplicador_velocidade"] = velocidade
+            estado["proximo_aumento"] = random.randint(5, 8)
+        if (estado["proximo_produto"] >= len(estado["produtos"])
+                and not estado.get("produto_infinito_enfileirado")):
+            estado["produtos"].append(gerar_produto_infinito())
+            estado["produto_infinito_enfileirado"] = True
+
+    estado["tempo_ate_proximo_produto"] = max(
+        0, estado.get("tempo_ate_proximo_produto", 0) - delta_s)
+    if estado["tempo_ate_proximo_produto"] <= 0:
+        if not liberar_proximo_produto(estado):
+            estado["tempo_ate_proximo_produto"] = 0.2
+
+    terminou_fila = estado.get("proximo_produto", 0) >= len(estado["produtos"])
+    if (estado.get("modo") == MODO_FASES and terminou_fila
+            and not estado.get("produtos_ativos")):
+        estado["fase"] = FASE_CONCLUIDA
+        if estado["pontos"] > estado["recorde"]:
+            Path(recorde_caminho).parent.mkdir(parents=True, exist_ok=True)
+            salvar_recorde(recorde_caminho, estado["pontos"])
+            estado["recorde"] = estado["pontos"]
 
 
 def executar_jogo():

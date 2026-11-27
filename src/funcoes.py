@@ -21,6 +21,7 @@ from src.config import (
     MODO_FASES, MODO_INFINITO, TEMPO_DECISAO_MINIMO,
     REDUCAO_TEMPO_POR_DIFICULDADE, ACRESCIMO_VELOCIDADE_POR_DIFICULDADE,
     INTERVALO_DIFICULDADE_INFINITO_MIN, INTERVALO_DIFICULDADE_INFINITO_MAX,
+    INTERVALO_CHEGADA_PRODUTOS,
 )
 
 def calcular_pontos(pontos_atual, pontos_ganhos):
@@ -126,6 +127,54 @@ def gerar_produto_infinito():
     return produto
 
 
+def _criar_produto_ativo(produto, indice, tempo_decisao):
+    """Cria os dados de transporte e os prazos independentes de um produto."""
+    return {
+        "produto": produto,
+        "indice": indice,
+        "pos_y": Y_INICIO_ESTEIRA,
+        "chegou": False,
+        "tempo_chegada": TEMPO_CHEGADA,
+        "tempo_decisao": tempo_decisao,
+    }
+
+
+def iniciar_fluxo_produtos(estado):
+    """Libera o primeiro produto e prepara a fila para as próximas chegadas."""
+    tempo = estado.get("tempo_decisao_base", TEMPO_DECISAO)
+    estado["produtos_ativos"] = []
+    estado["proximo_produto"] = 0
+    estado["tempo_ate_proximo_produto"] = 0
+    estado["feedback_mensagem"] = None
+    estado["feedback_temporizador"] = 0
+    estado["produto_infinito_enfileirado"] = False
+    estado["produtos_concluidos_delta"] = 0
+    liberar_proximo_produto(estado, tempo)
+
+
+def liberar_proximo_produto(estado, tempo_decisao=None):
+    """Adiciona o próximo item da fila, escolhendo uma faixa desocupada."""
+    indice = estado.get("proximo_produto", 0)
+    if indice >= len(estado.get("produtos", [])):
+        return False
+    ocupadas = {ativo["produto"]["faixa"] for ativo in estado.get("produtos_ativos", [])}
+    livres = [faixa for faixa in range(NUM_FAIXAS) if faixa not in ocupadas]
+    if not livres:
+        return False
+    produto = estado["produtos"][indice]
+    if produto["faixa"] not in livres:
+        produto["faixa"] = random.choice(livres)
+    tempo = tempo_decisao if tempo_decisao is not None else estado.get("tempo_decisao_base", TEMPO_DECISAO)
+    estado.setdefault("produtos_ativos", []).append(_criar_produto_ativo(produto, indice, tempo))
+    estado["proximo_produto"] = indice + 1
+    if (estado.get("produto_infinito_enfileirado")
+            and estado["proximo_produto"] >= len(estado["produtos"])):
+        estado["produto_infinito_enfileirado"] = False
+    estado["indice"] = indice
+    estado["tempo_ate_proximo_produto"] = INTERVALO_CHEGADA_PRODUTOS
+    return True
+
+
 def configurar_fase(estado, numero_fase):
     """Carrega os produtos e a dificuldade da fase sem apagar o placar da sessão."""
     total = total_da_fase(numero_fase)
@@ -141,6 +190,7 @@ def configurar_fase(estado, numero_fase):
     estado["produtos_concluidos"] = 0
     estado["tempo_decisao_base"] = tempo
     estado["multiplicador_velocidade"] = velocidade
+    iniciar_fluxo_produtos(estado)
     estado["tempo_decisao"] = tempo
     estado["tempo_chegada"] = TEMPO_CHEGADA
     estado["pos_produto"] = Y_INICIO_ESTEIRA
@@ -171,6 +221,7 @@ def iniciar_modo(estado, modo):
                   pos_produto=Y_INICIO_ESTEIRA, chegou=False,
                   proximo_aumento=random.randint(INTERVALO_DIFICULDADE_INFINITO_MIN,
                                                  INTERVALO_DIFICULDADE_INFINITO_MAX))
+    iniciar_fluxo_produtos(estado)
 
 
 def resposta_correta(produto):
@@ -213,6 +264,13 @@ def criar_estado(recorde):
         "multiplicador_velocidade": 1.0,
         "proximo_aumento": random.randint(INTERVALO_DIFICULDADE_INFINITO_MIN,
                                            INTERVALO_DIFICULDADE_INFINITO_MAX),
+        "produtos_ativos": [],
+        "proximo_produto": 0,
+        "tempo_ate_proximo_produto": 0,
+        "feedback_mensagem": None,
+        "feedback_temporizador": 0,
+        "produto_infinito_enfileirado": False,
+        "produtos_concluidos_delta": 0,
     }
 
 

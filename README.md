@@ -20,9 +20,9 @@ Um jogo arcade em que o jogador é um inspetor humano que revisa as recomendaç�
 - `docs/`: documentação do projeto, incluindo proposta inicial.
 ## Descrição do jogo
 
-Em Fábrica 404, uma fábrica usa inteligência artificial para classificar produtos, mas o sistema comete erros. O jogador controla um inspetor que se move entre as três faixas de uma esteira. Um produto por vez surge em uma faixa aleatória e avança pela esteira, com características que indicam se está adequado ou defeituoso. A IA recomenda aprovar ou rejeitar, e essa recomendação pode estar errada.
+Em Fábrica 404, uma fábrica usa inteligência artificial para classificar produtos, mas o sistema comete erros. O jogador controla um inspetor que se move entre as três faixas de uma esteira. Produtos chegam em sequência e podem estar ativos ao mesmo tempo em faixas diferentes. Cada um avança pela esteira com características que indicam se está adequado ou defeituoso. A IA recomenda aprovar ou rejeitar, e essa recomendação pode estar errada.
 
-O jogador precisa estar na faixa do produto, conferir suas características e decidir quando ele tocar a zona de inspeção. Após cada decisão, o jogo mostra um feedback explicando o resultado.
+O jogador precisa acompanhar as três faixas, mover o inspetor até a faixa de cada produto e decidir quando ele tocar a zona de inspeção. Cada produto tem seu próprio prazo: deixar um produto passar sem inspeção conta como erro. O resultado aparece em uma mensagem curta sem pausar as outras esteiras.
 
 ## Modos de jogo
 
@@ -35,11 +35,12 @@ Conferir as características de cada produto em vez de seguir cegamente a recome
 
 ## Regras do jogo
 
-- Um produto por vez surge em uma faixa aleatória e avança pela esteira; suas características aparecem em um painel fixo na tela.
+- Produtos chegam em intervalos regulares e podem ocupar as três faixas simultaneamente; cada faixa tem no máximo um produto ativo para manter os objetos legíveis.
+- O inspetor inspeciona o produto da faixa em que está. O painel mostra as características, a recomendação da IA e o prazo do produto na zona; barras sobre os produtos indicam o tempo restante.
 - A IA recomenda aprovar ou rejeitar cada produto e pode errar. Na primeira fase, são 10 produtos, 5 defeituosos e 4 recomendações incorretas.
-- O jogador move o inspetor até a faixa do produto e pode decidir assim que ele colide com a zona de inspeção. Nesse ponto ele já atravessou completamente a porta.
+- O jogador move o inspetor até a faixa do produto e pode decidir assim que ele colide com a zona de inspeção. Nesse ponto ele já atravessou completamente a porta. Os prazos continuam correndo nas outras faixas enquanto o jogador decide.
 - Se o produto tiver qualquer defeito, a resposta correta é rejeitar; sem defeitos, é aprovar. Cada acerto vale +10 pontos; cada erro aumenta em 1 o contador de erros.
-- Nesta revisão o produto aguarda a decisão parado; não foi introduzido um prazo de inspeção. O contrato de tempo esgotado continua testado, mas não é acionado pelo loop.
+- Quando uma inspeção termina, o produto sai do jogo e uma mensagem breve informa o resultado; o transporte e os prazos dos outros produtos não são interrompidos.
 - Após cada decisão, o jogo explica se o jogador acertou, se a IA acertou e quais eram os defeitos.
 ## Controles
 
@@ -52,7 +53,7 @@ Conferir as características de cada produto em vez de seguir cegamente a recome
 - Enter entre fases: iniciar a próxima fase.
 - M: voltar ao menu.
 
-As setas e decisões ficam bloqueadas durante o feedback e na tela final.
+O feedback de cada inspeção é breve e não bloqueia as setas, as decisões ou o movimento dos produtos. Os controles ficam bloqueados apenas nas telas de menu e resultado final.
 O recorde é salvo ao terminar a partida, apenas se superar o valor anterior.
 ## Como executar o projeto
 
@@ -94,10 +95,10 @@ A prévia usa dados fictícios explícitos e não salva recorde. `main.py` execu
 a partida real em 800 × 600. O transporte usa delta time; o produto surge no vão
 da parede, passa pela porta e para na zona. A porta fecha após a passagem completa.
 O loop usa a arquitetura da Mariana: eventos, decisão, finalização e atualização.
-O feedback conta regressivamente de 120 a zero, equivalente a dois segundos,
-e o desfecho é verificado antes de avançar o índice. Na tela final, o índice
-permanece no último produto válido. `transporte.py` adapta `mover_produto()`
-ao delta time e centraliza o Rect com escala gradual; não há dois movimentos.
+Os produtos avançam em paralelo com prazos independentes; o painel mostra o
+item na faixa do inspetor e barras indicam os prazos ativos. O feedback não
+interrompe a partida. `transporte.py` adapta `mover_produto()` ao delta time e
+calcula o retângulo de cada sprite com escala gradual.
 O texto de feedback vem das regras e o desenho acrescenta o destaque de correção
 ou divergência da IA. Contrato: [tests/README.md](tests/README.md).
 

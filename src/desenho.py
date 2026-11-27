@@ -12,6 +12,7 @@ from src.config import (FAIXAS_X, Y_INSPETOR, DEFEITOS, LIMITE_ERROS,
                         Y_BASE_PORTAS, Y_FIM_ESTEIRA, Y_INICIO_ESTEIRA,
                         ALTURA_INSPETOR, Y_PASSAGEM_PORTA)
 from src.funcoes import total_da_fase
+from src.transporte import rect_produto_ativo
 
 ARTES = Path(__file__).resolve().parents[1] / "assets" / "imagens"
 FUNDO = (13, 25, 36)
@@ -200,6 +201,13 @@ def zona_da_faixa(zona, faixa):
 
 def estados_portas_inspecao(produto, rect_produto, zona):
     portas = ["aberta"] * len(FAIXAS_X)
+    if isinstance(produto, list):
+        for item in produto:
+            item_produto, item_rect = item
+            faixa = item_produto["faixa"]
+            if item_rect.colliderect(zona_da_faixa(zona, faixa)):
+                portas[faixa] = "fechada"
+        return tuple(portas)
     if produto is not None and rect_produto is not None:
         faixa = produto["faixa"]
         if (rect_produto.top >= Y_PASSAGEM_PORTA
@@ -259,18 +267,32 @@ def desenhar_painel(tela, fontes, produto):
         _texto(tela, fontes["normal"], "Sem defeitos", (202, y), VERDE)
     _texto(tela, fontes["rotulo"], "RECOMENDAÇÃO DA IA", (554, 80), SUAVE)
     _texto(tela, fontes["normal"], produto["recomendacao_ia"].upper(), (554, 99), CIANO)
-    _texto(tela, fontes["pequena"], "Compare com as características.", (554, 131), SUAVE)
+    restante = produto.get("_tempo_restante")
+    aviso = f"Prazo: {restante:.1f}s" if restante is not None else "Compare com as características."
+    _texto(tela, fontes["pequena"], aviso, (554, 131), AMARELO if restante is not None else SUAVE)
+
+
+def desenhar_painel_vazio(tela, fontes):
+    _cartao(tela, (12, 62, 776, 91), 211)
+    for x in (188, 540):
+        pygame.draw.line(tela, (49, 77, 94), (x, 82), (x, 144))
+    _texto(tela, fontes["rotulo"], "FAIXA DO INSPETOR", (24, 80), SUAVE)
+    _texto(tela, fontes["pequena"], "Sem produto na zona", (24, 106), TEXTO)
+    _texto(tela, fontes["rotulo"], "ATENÇÃO ÀS OUTRAS ESTEIRAS", (202, 80), SUAVE)
+    _texto(tela, fontes["pequena"], "Produtos ativos têm prazos independentes.", (202, 105), AMARELO)
+    _texto(tela, fontes["rotulo"], "CONTROLES", (554, 80), SUAVE)
+    _texto(tela, fontes["pequena"], "← → trocar de faixa", (554, 105), CIANO)
 
 
 def desenhar_hud(tela, fontes, estado):
     _cartao(tela, (12, 6, 776, 48), 237)
     pygame.draw.line(tela, CIANO, (16, 51), (784, 51))
     total = estado.get("total_fase") or len(estado["produtos"])
-    progresso = min(estado["indice"]+1, total)
-    produto_atual = (f'{estado.get("produtos_concluidos", 0) + 1} / ∞'
-                     if estado.get("modo") == MODO_INFINITO else f"{progresso} / {total}")
+    concluidos = estado.get("produtos_concluidos", 0)
+    produto_atual = (f'{concluidos} / ∞' if estado.get("modo") == MODO_INFINITO
+                     else f'{min(concluidos, total)} / {total}')
     dados = [("PONTOS", estado["pontos"]), ("ERROS", f'{estado["erros"]} / {LIMITE_ERROS}'),
-             ("PRODUTO", produto_atual), ("RECORDE", estado["recorde"])]
+             ("AVANÇO", produto_atual), ("RECORDE", estado["recorde"])]
     for i, (rotulo, valor) in enumerate(dados):
         x = 30+i*194
         pygame.draw.line(tela, (49, 77, 94), (x-14, 12), (x-14, 49))
@@ -361,7 +383,8 @@ def desenhar_fase_concluida(tela, fontes, estado):
 
 def desenhar_rodape(tela, fontes, estado, portas):
     _cartao(tela, (0, 574, 800, 26), 228)
-    texto = "Inspeção ocupada · porta fechada" if "fechada" in portas else "Inspeção livre · portas abertas"
+    ocupadas = sum(porta == "fechada" for porta in portas)
+    texto = f"{ocupadas} esteira(s) com produto na zona" if ocupadas else "Inspeção livre · portas abertas"
     _texto(tela, fontes["pequena"], texto, (12, 577), AMARELO if "fechada" in portas else CIANO)
     identificacao = (f"FASE {estado['fase_numero']}" if estado.get("modo") != MODO_INFINITO
                     else "MODO INFINITO")
@@ -382,28 +405,49 @@ def _desenhar_quadro(tela, interface, fontes, estado, zona, rect_produto, tempo_
         desenhar_hud(interface, fontes, estado)
         desenhar_tela_fim(interface, fontes, estado)
         return
-    produto = None
-    if 0 <= estado["indice"] < len(estado["produtos"]):
-        produto = estado["produtos"][estado["indice"]]
-    portas = estados_portas_inspecao(produto, rect_produto, zona)
-    faixa = produto["faixa"] if produto is not None and rect_produto is not None else None
+    ativos = estado.get("produtos_ativos", [])
+    renderizaveis = [(ativo["produto"], rect_produto_ativo(ativo)) for ativo in ativos]
+    produto_atual = next((p for p, rect in renderizaveis
+                         if p["faixa"] == estado["faixa_inspetor"]
+                         and rect.colliderect(zona_da_faixa(zona, p["faixa"]))), None)
+    portas = estados_portas_inspecao(renderizaveis, None, zona)
+    faixa = estado["faixa_inspetor"]
     desenhar_cenario(tela, zona, portas, faixa, tempo_ms, estado["fase"] == FASE_JOGANDO)
-    if produto is not None:
-        if rect_produto is not None:
-            if portas[produto["faixa"]] == "fechada":
-                pygame.draw.rect(tela, (49, 129, 140), rect_produto.inflate(6, 6), 1, border_radius=3)
-            desenhar_produto(tela, rect_produto, produto)
-            if rect_produto.top < Y_PASSAGEM_PORTA:
-                # O produto passa por trás da travessa, sem ser pintado sobre ela.
-                desenhar_portas(tela, portas)
+    for produto, rect in renderizaveis:
+        ativo = next(item for item in ativos if item["produto"] is produto)
+        prazo = ativo["tempo_decisao"] if ativo["chegou"] else ativo["tempo_chegada"]
+        limite = estado.get("tempo_decisao_base", 4.0) if ativo["chegou"] else 2.0
+        largura_barra = max(18, rect.width)
+        x_barra = rect.centerx-largura_barra//2
+        y_barra = rect.top-8
+        if rect.colliderect(zona_da_faixa(zona, produto["faixa"])):
+            pygame.draw.rect(tela, (12, 20, 29), (x_barra, y_barra, largura_barra, 5))
+            pygame.draw.rect(tela, AMARELO if not ativo["chegou"] else CIANO,
+                             (x_barra, y_barra, round(largura_barra*max(0, min(1, prazo/max(.01, limite)))), 5))
+        if portas[produto["faixa"]] == "fechada":
+            pygame.draw.rect(tela, (49, 129, 140), rect.inflate(6, 6), 1, border_radius=3)
+        desenhar_produto(tela, rect, produto)
+        if rect.top < Y_PASSAGEM_PORTA:
+            # O produto passa por trás da travessa, sem ser pintado sobre ela.
+            desenhar_portas(tela, portas)
     desenhar_inspetor(tela, estado["faixa_inspetor"])
     # UI por último: mesma organização em todas as resoluções.
     desenhar_hud(interface, fontes, estado)
-    if produto is not None:
-        desenhar_painel(interface, fontes, produto)
+    if produto_atual is not None:
+        ativo = next(item for item in ativos if item["produto"] is produto_atual)
+        exibicao = dict(produto_atual)
+        exibicao["_tempo_restante"] = (ativo["tempo_decisao"] if ativo["chegou"]
+                                        else ativo["tempo_chegada"])
+        desenhar_painel(interface, fontes, exibicao)
+    else:
+        desenhar_painel_vazio(interface, fontes)
     desenhar_rodape(interface, fontes, estado, portas)
-    if estado["fase"] == FASE_FEEDBACK and estado["resultado"] is not None and produto is not None:
-        desenhar_feedback(interface, fontes, linhas_feedback(produto, estado["resultado"]))
+    mensagem = estado.get("feedback_mensagem")
+    if mensagem:
+        cor = VERDE if "correta" in mensagem else AMARELO if "Tempo esgotado" in mensagem else VERMELHO
+        _cartao(interface, (248, 534, 304, 30), 232)
+        texto = fontes["pequena"].render(mensagem, True, cor)
+        interface.blit(texto, texto.get_rect(center=(400, 549)))
 
 
 def desenhar_jogo(tela, fontes, estado, zona, rect_produto, tempo_ms=None):

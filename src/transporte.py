@@ -12,10 +12,26 @@ def avancar_transporte(posicao, delta_s, multiplicador=1.0):
 
 
 def rect_produto(estado):
+    """Retângulo do produto na faixa atual do inspetor (compatibilidade)."""
+    ativos = estado.get("produtos_ativos", [])
+    for ativo in ativos:
+        if ativo["produto"]["faixa"] == estado.get("faixa_inspetor"):
+            return rect_produto_ativo(ativo)
     if not 0 <= estado["indice"] < len(estado["produtos"]):
         return None
     produto = estado["produtos"][estado["indice"]]
     y = estado["pos_produto"]
+    progresso = max(0, min(1, (y-Y_INICIO_ESTEIRA)/(Y_PARADA_PRODUTO-Y_INICIO_ESTEIRA)))
+    escala = 0.65 + 0.35 * progresso
+    rect = pygame.Rect(0, round(y), round(LARGURA_PRODUTO*escala), round(ALTURA_PRODUTO*escala))
+    rect.centerx = FAIXAS_X[produto["faixa"]]
+    return rect
+
+
+def rect_produto_ativo(ativo):
+    """Calcula o retângulo de um produto ativo conforme seu avanço na esteira."""
+    produto = ativo["produto"]
+    y = ativo["pos_y"]
     progresso = max(0, min(1, (y-Y_INICIO_ESTEIRA)/(Y_PARADA_PRODUTO-Y_INICIO_ESTEIRA)))
     escala = 0.65 + 0.35 * progresso
     rect = pygame.Rect(0, round(y), round(LARGURA_PRODUTO*escala), round(ALTURA_PRODUTO*escala))

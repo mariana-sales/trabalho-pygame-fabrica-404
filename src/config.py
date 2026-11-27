@@ -61,6 +61,8 @@ Y_INSPETOR = 568
 ALTURA_INSPETOR = 132
 VELOCIDADE_ESTEIRA = 1.7        # pixels por quadro
 DURACAO_FEEDBACK = 120          # quadros (2 s a 60 FPS)
+INTERVALO_CHEGADA_PRODUTOS = 1.8  # segundos entre produtos liberados nas esteiras
+DURACAO_MENSAGEM_RESULTADO = 1.2  # feedback visual sem pausar os outros produtos
 
 # Novas cores (Kauan define; estes são valores de partida)
 COR_ESTEIRA = (71, 85, 105)
