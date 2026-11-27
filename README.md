@@ -73,6 +73,21 @@ Se vários prazos expirarem juntos, eles são processados na ordem dos produtos
 ativos, até a falha que atinge o limite. O texto usa quebra de linha em um painel
 separado das estatísticas. `Enter` reinicia e `M` volta ao menu.
 
+## Catálogo de produtos
+
+O sorteio dos dois modos usa oito tipos: **Caixa, Pacote, Garrafa, Lata, Frasco,
+Peça mecânica, Bobina e Bateria**. Os três últimos ampliam o catálogo anterior.
+A peça usa a arte já disponível; Bobina e Bateria têm novas artes. Pacote e
+Frasco também receberam sprites próprios, distintos de Caixa e Garrafa.
+
+Todos têm arte neutra: defeitos são sorteados independentemente e descritos no
+painel. A lógica e as proporções de recomendações erradas da IA são preservadas.
+O catálogo e o mapeamento de arquivos ficam juntos em `src/config.py`, evitando
+nomes sem arte correspondente. Os PNGs ficam em `assets/imagens/fabrica404_v2/`;
+escala proporcional por vizinho mais próximo mantém o encaixe na esteira.
+Se uma arte estiver ausente ou ilegível, um ícone informativo mantém o produto
+visível e a partida continua; ele não indica defeito.
+
 ## Controles
 
 - Na tela inicial, `1` ou clique: modo Fases; `2` ou clique: modo Infinito; `3`/`L` ou clique: loja.
@@ -138,8 +153,10 @@ transporte a 30/60/144 FPS, portas, plataforma estática, decisões, vitória,
 derrota, reinício com Enter, persistência do recorde e ciclo completo pelo loop
 com eventos de teclado e SDL sem janela. Quadros do percurso real
 conferidos visualmente em 800 × 600; testes de desenho cobrem outras resoluções.
-As mudanças da loja e da explicação de derrota receberam apenas verificação sintática e `git diff --check`;
-testes automatizados e validação jogando ficam para execução manual pelo autor.
+As mudanças da loja, da explicação de derrota e do catálogo receberam apenas
+verificações estáticas: compilação sintática, `git diff --check` e conferência do
+catálogo/arquivos PNG. Não foram criados, alterados ou executados testes nesta
+etapa; testes automatizados e validação jogando ficam para execução pelo autor.
 
 Artes: `assets/imagens/fabrica404/` contém o pacote fornecido pelo usuário
 (portas B, zonas B e inspetor A) e o fundo derivado da referência aprovada.

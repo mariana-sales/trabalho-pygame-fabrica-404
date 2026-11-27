@@ -41,7 +41,18 @@ ACRESCIMO_VELOCIDADE_POR_DIFICULDADE = 0.18
 INTERVALO_DIFICULDADE_INFINITO_MIN = 5
 INTERVALO_DIFICULDADE_INFINITO_MAX = 8
 
-NOMES_PRODUTOS = ["Caixa", "Pacote", "Garrafa", "Lata", "Frasco"]
+# Fonte única para geração e desenho: cada tipo possui uma arte distinta.
+SPRITES_PRODUTOS = {
+    "Caixa": "produto_caixa.png",
+    "Pacote": "produto_pacote.png",
+    "Garrafa": "produto_garrafa.png",
+    "Lata": "produto_lata.png",
+    "Frasco": "produto_frasco.png",
+    "Peça mecânica": "produto_peca_mecanica.png",
+    "Bobina": "produto_bobina.png",
+    "Bateria": "produto_bateria.png",
+}
+NOMES_PRODUTOS = list(SPRITES_PRODUTOS)
 
 DEFEITOS = {
     "embalagem_danificada": "Embalagem amassada",

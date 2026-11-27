@@ -12,7 +12,7 @@ from src.config import (FAIXAS_X, Y_INSPETOR, DEFEITOS, LIMITE_ERROS,
                         Y_BASE_PORTAS, Y_FIM_ESTEIRA, Y_INICIO_ESTEIRA,
                         ALTURA_INSPETOR, Y_PASSAGEM_PORTA)
 from src.funcoes import total_da_fase
-from src.config import FASE_LOJA
+from src.config import FASE_LOJA, SPRITES_PRODUTOS
 from src.loja import INSPETORES
 from src.transporte import rect_produto_ativo
 
@@ -25,11 +25,6 @@ CIANO = (62, 216, 226)
 AMARELO = (255, 199, 75)
 VERDE = (102, 226, 153)
 VERMELHO = (255, 132, 129)
-SPRITES_PRODUTOS = {
-    "Caixa": "produto_caixa.png", "Pacote": "produto_caixa.png",
-    "Garrafa": "produto_garrafa.png", "Frasco": "produto_garrafa.png",
-    "Lata": "produto_lata.png", "Peça mecânica": "produto_peca_mecanica.png",
-}
 
 
 def criar_fontes():
@@ -46,7 +41,10 @@ def _arte(nome, tamanho=None):
     caminho = ARTES / pasta / nome
     if not caminho.is_file():
         return None
-    original = pygame.image.load(str(caminho))
+    try:
+        original = pygame.image.load(str(caminho))
+    except (OSError, pygame.error):
+        return None
     if pygame.display.get_surface() is not None:
         original = original.convert_alpha()
     if tamanho is None:
@@ -268,11 +266,17 @@ def desenhar_inspetor(tela, faixa_inspetor, aparencia="padrao"):
 
 def desenhar_produto(tela, rect_produto, produto=None):
     nome = produto["nome"] if produto is not None else "Caixa"
-    arte = _arte(SPRITES_PRODUTOS.get(nome, "produto_caixa.png"), rect_produto.size)
+    arquivo = SPRITES_PRODUTOS.get(nome)
+    arte = _arte(arquivo, rect_produto.size) if arquivo else None
     if arte is not None:
         tela.blit(arte, arte.get_rect(midbottom=rect_produto.midbottom))
     else:
-        pygame.draw.rect(tela, (199, 151, 92), rect_produto, border_radius=3)
+        # Ícone de recurso indisponível, neutro; nunca indica um defeito sorteado.
+        pygame.draw.rect(tela, (72, 96, 115), rect_produto)
+        pygame.draw.rect(tela, (172, 203, 216), rect_produto, 2)
+        x, y = rect_produto.center
+        pygame.draw.rect(tela, TEXTO, (x-1, y-6, 3, 3))
+        pygame.draw.rect(tela, TEXTO, (x-1, y-1, 3, 7))
 
 
 def desenhar_painel(tela, fontes, produto):

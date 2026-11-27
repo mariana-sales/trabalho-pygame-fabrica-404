@@ -1,0 +1,22 @@
+{
+  "ferramenta": "image_gen (integrada)",
+  "finalidade": "Sprites de produtos neutros; sem defeitos fixos. Recorte das margens alfa e redução por vizinho mais próximo, preservando o canal alfa.",
+  "prompts": [
+    {
+      "id": "pacote",
+      "prompt": "Use case: stylized-concept. Create ONE isolated neutral factory product game sprite for Fabrica 404, transparent RGBA background. Pixel art with extremely coarse crisp pixels like a native 40x40 pixel inventory sprite enlarged nearest-neighbor. Dark navy outline 1 native pixel, 3-tone shading, slightly elevated frontal three-quarter perspective with visible top, lighting upper left. Limited industrial steel gray/cyan/copper palette. Centered single object, fully visible, no ground shadow, no scenery, no text, no logo, no labels, no defects, no damage, no scratches, no dirt. Must read clearly reduced to about 40 pixels tall. A sealed soft flat kraft-paper pouch, broad rectangular soft package with crimped folded top and bottom seams; warm tan paper and a plain cream horizontal band. Wide flat silhouette clearly distinct from a cubic cardboard box. Whole package intact."
+    },
+    {
+      "id": "frasco",
+      "prompt": "Use case: stylized-concept. Create ONE isolated neutral factory product game sprite for Fabrica 404, transparent RGBA background. Pixel art with extremely coarse crisp pixels like a native 40x40 pixel inventory sprite enlarged nearest-neighbor. Dark navy outline 1 native pixel, 3-tone shading, slightly elevated frontal three-quarter perspective with visible top, lighting upper left. Limited industrial steel gray/cyan/copper palette. Centered single object, fully visible, no ground shadow, no scenery, no text, no logo, no labels, no defects, no damage, no scratches, no dirt. Must read clearly reduced to about 40 pixels tall. A squat wide amber-glass cylindrical jar with a broad silver screw lid, very short neck, plain intact surfaces, no label. Clearly wider and shorter than a bottle, clean neutral manufactured product."
+    },
+    {
+      "id": "bobina",
+      "prompt": "Use case: stylized-concept. Create ONE isolated neutral factory product game sprite for Fabrica 404, transparent RGBA background. Pixel art with extremely coarse crisp pixels like a native 40x40 pixel inventory sprite enlarged nearest-neighbor. Dark navy outline 1 native pixel, 3-tone shading, slightly elevated frontal three-quarter perspective with visible top, lighting upper left. Limited industrial steel gray/cyan/copper palette. Centered single object, fully visible, no ground shadow, no scenery, no text, no logo, no labels, no defects, no damage, no scratches, no dirt. Must read clearly reduced to about 40 pixels tall. One industrial spool of neatly wound copper wire, cylindrical reel axis horizontal, dark blue-gray circular flange on each side, visible continuous orange copper windings in the middle. Broad silhouette, intact, no loose wires."
+    },
+    {
+      "id": "bateria",
+      "prompt": "Use case: stylized-concept. Create ONE isolated neutral factory product game sprite for Fabrica 404, transparent RGBA background. Pixel art with extremely coarse crisp pixels like a native 40x40 pixel inventory sprite enlarged nearest-neighbor. Dark navy outline 1 native pixel, 3-tone shading, slightly elevated frontal three-quarter perspective with visible top, lighting upper left. Limited industrial steel gray/cyan/copper palette. Centered single object, fully visible, no ground shadow, no scenery, no text, no logo, no labels, no defects, no damage, no scratches, no dirt. Must read clearly reduced to about 40 pixels tall. One sealed industrial rectangular teal battery with two short silver terminal posts on top, a darker side face and a horizontal pale cyan band across the front. Intact manufactured item, no symbols or labels, distinct tall rectangular silhouette."
+    }
+  ]
+}
