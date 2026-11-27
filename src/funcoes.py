@@ -198,6 +198,7 @@ def configurar_fase(estado, numero_fase):
     estado["chegou"] = False
     estado["resultado"] = None
     estado["desfecho"] = None
+    estado["derrota_detalhe"] = None
     estado["frames_feedback"] = 0
 
 
@@ -206,7 +207,7 @@ def iniciar_modo(estado, modo):
     if modo not in (MODO_FASES, MODO_INFINITO):
         modo = MODO_FASES
     estado.update(pontos=0, erros=0, ia_errou=0, ia_corrigida=0,
-                  resultado=None, desfecho=None, fase_numero=1,
+                  resultado=None, desfecho=None, derrota_detalhe=None, fase_numero=1,
                   produtos_concluidos=0)
     if modo == MODO_FASES:
         configurar_fase(estado, 1)
@@ -253,6 +254,7 @@ def criar_estado(recorde):
         "resultado": None,
         "frames_feedback": 0,
         "desfecho": None,
+        "derrota_detalhe": None,
         "recorde": recorde,
         "tempo_chegada": TEMPO_CHEGADA,
         "chegou": False,
@@ -376,6 +378,27 @@ def verificar_desfecho(erros, concluidos, total, limite_erros):
     if partida_vencida(erros, concluidos, total, limite_erros):
         return "vitoria"
     return None
+
+
+def texto_derrota(detalhe):
+    """Explica a falha congelada no limite de erros, sem depender da seleção."""
+    if not detalhe:
+        return ["O limite de erros foi atingido."]
+    faixa = ("esquerda", "central", "direita")[detalhe["faixa"]]
+    linhas = [f"Produto #{detalhe['numero']}: {detalhe['nome']} · faixa {detalhe['faixa'] + 1} ({faixa})."]
+    if detalhe["decisao"] is None:
+        if detalhe["prazo"] == "chegada":
+            linhas.append("Tempo esgotado antes de o inspetor chegar à faixa do produto.")
+        else:
+            linhas.append("Tempo esgotado durante a decisão, após o inspetor chegar à faixa.")
+        linhas.append("Decisão tomada: nenhuma (produto expirado).")
+    else:
+        linhas.append(f"Decisão tomada: {detalhe['decisao'].upper()}.")
+    linhas.append(f"Decisão correta: {detalhe['resposta_correta'].upper()}.")
+    defeitos = [DEFEITOS.get(codigo, codigo) for codigo in detalhe["defeitos"]]
+    linhas.append("Defeitos: " + ", ".join(defeitos) + "." if defeitos else
+                  "Sem defeitos: este produto deveria ser aprovado.")
+    return linhas
 
 
 def texto_feedback(produto, resultado):

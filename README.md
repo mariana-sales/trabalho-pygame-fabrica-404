@@ -57,7 +57,22 @@ Conferir as características de cada produto em vez de seguir cegamente a recome
 - O jogador move o inspetor até a faixa do produto e pode decidir assim que ele colide com a zona de inspeção. Nesse ponto ele já atravessou completamente a porta. Os prazos continuam correndo nas outras faixas enquanto o jogador decide.
 - Se o produto tiver qualquer defeito, a resposta correta é rejeitar; sem defeitos, é aprovar. Cada acerto vale +10 pontos; cada erro aumenta em 1 o contador de erros.
 - Quando uma inspeção termina, o produto sai do jogo e uma mensagem breve informa o resultado; o transporte e os prazos dos outros produtos não são interrompidos.
-- Após cada decisão, o jogo explica se o jogador acertou, se a IA acertou e quais eram os defeitos.
+- Na derrota, o jogo explica a falha que atingiu o limite de erros (detalhes abaixo).
+
+## Motivo da derrota
+
+A tela final conserva pontos, recorde, erros e estatísticas da IA e identifica
+o produto e a faixa da **falha que causou o terceiro erro**. Uma decisão errada
+mostra a escolha feita, a resposta correta e os defeitos (ou a ausência deles).
+Uma expiração informa se faltou chegar à faixa ou decidir depois da chegada.
+O prazo de decisão continua correndo mesmo se o inspetor sair dessa faixa.
+
+O registro é copiado no momento da falha e o jogo encerra imediatamente: outros
+produtos ou eventos no mesmo quadro não substituem a causa pela seleção da tela.
+Se vários prazos expirarem juntos, eles são processados na ordem dos produtos
+ativos, até a falha que atinge o limite. O texto usa quebra de linha em um painel
+separado das estatísticas. `Enter` reinicia e `M` volta ao menu.
+
 ## Controles
 
 - Na tela inicial, `1` ou clique: modo Fases; `2` ou clique: modo Infinito; `3`/`L` ou clique: loja.
@@ -123,7 +138,7 @@ transporte a 30/60/144 FPS, portas, plataforma estática, decisões, vitória,
 derrota, reinício com Enter, persistência do recorde e ciclo completo pelo loop
 com eventos de teclado e SDL sem janela. Quadros do percurso real
 conferidos visualmente em 800 × 600; testes de desenho cobrem outras resoluções.
-As mudanças da loja receberam apenas verificação sintática e `git diff --check`;
+As mudanças da loja e da explicação de derrota receberam apenas verificação sintática e `git diff --check`;
 testes automatizados e validação jogando ficam para execução manual pelo autor.
 
 Artes: `assets/imagens/fabrica404/` contém o pacote fornecido pelo usuário

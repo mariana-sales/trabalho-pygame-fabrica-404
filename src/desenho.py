@@ -4,7 +4,7 @@ from math import ceil
 from pathlib import Path
 
 import pygame
-from src.funcoes import texto_feedback
+from src.funcoes import texto_feedback, texto_derrota
 
 from src.config import (FAIXAS_X, Y_INSPETOR, DEFEITOS, LIMITE_ERROS,
                         FASE_FIM, FASE_FEEDBACK, FASE_JOGANDO, FASE_MENU,
@@ -343,20 +343,27 @@ def desenhar_feedback(tela, fontes, linhas):
 
 
 def desenhar_tela_fim(tela, fontes, estado):
-    _cartao(tela, (130, 100, 540, 430), 237)
+    _cartao(tela, (90, 78, 620, 484), 245)
     venceu = estado["desfecho"] == "vitoria"
     _texto(tela, fontes["titulo"], "VITÓRIA · TURNO CONCLUÍDO" if venceu else "DERROTA · LIMITE DE ERROS",
-           (154, 122), VERDE if venceu else VERMELHO)
-    for y, nome, valor in [(190, "Pontuação final", estado["pontos"]),
-                            (245, "Erros cometidos", estado["erros"]),
-                            (300, "Recorde", estado["recorde"]),
-                            (355, "Recomendações erradas da IA", estado["ia_errou"]),
-                            (410, "Vezes que você corrigiu a IA", estado["ia_corrigida"])]:
-        _texto(tela, fontes["normal"], nome, (154, y))
-        _texto(tela, fontes["numero"], valor, (606, y-3), CIANO)
-    _texto(tela, fontes["pequena"], "Supervisão humana faz a diferença.", (154, 486), SUAVE)
-    _texto(tela, fontes["pequena"], estado.get("controles", "Enter: nova partida | Esc: sair"),
-           (154, 510), SUAVE)
+           (112, 94), VERDE if venceu else VERMELHO)
+    for y, nome, valor in [(142, "Pontuação final", estado["pontos"]),
+                            (169, "Erros cometidos", estado["erros"]),
+                            (196, "Recorde", estado["recorde"]),
+                            (223, "Recomendações erradas da IA", estado["ia_errou"]),
+                            (250, "Vezes que você corrigiu a IA", estado["ia_corrigida"])]:
+        _texto(tela, fontes["normal"], nome, (112, y))
+        texto = fontes["normal"].render(str(valor), True, CIANO)
+        tela.blit(texto, texto.get_rect(topright=(686, y)))
+    pygame.draw.line(tela, SUAVE, (112, 283), (686, 283))
+    if not venceu:
+        _texto(tela, fontes["normal"], "ERRO QUE ENCERROU A PARTIDA", (112, 296), AMARELO)
+        y = 328
+        for linha in texto_derrota(estado.get("derrota_detalhe")):
+            y = _linhas(tela, fontes["pequena"], linha, 112, y, 574) + 4
+    _texto(tela, fontes["pequena"], "Supervisão humana faz a diferença.", (112, 508), SUAVE)
+    _texto(tela, fontes["pequena"], estado.get("controles", "Enter: nova partida | M: menu | Esc: sair"),
+           (112, 536), SUAVE)
 
 
 def desenhar_menu(tela, fontes, estado):
@@ -540,7 +547,7 @@ def desenhar_jogo(tela, fontes, estado, zona, rect_produto, tempo_ms=None):
 
     if estado["fase"] == FASE_FIM:
         colocar_area((0, 0, 800, 62), "midtop", (tela.get_width()//2, 0))
-        colocar_area((130, 100, 540, 430), "center", tela.get_rect().center)
+        colocar_area((90, 78, 620, 484), "center", tela.get_rect().center)
     else:
         colocar_area((0, 0, 800, 240), "midtop", (tela.get_width()//2, 0))
         colocar_area((0, 574, 800, 26), "midbottom", (tela.get_width()//2, tela.get_height()))

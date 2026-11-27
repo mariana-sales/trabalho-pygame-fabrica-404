@@ -69,6 +69,8 @@ def tentar_decidir(estado, decisao, zona):
 
 def finalizar_produto(estado, ativo, resultado):
     """Registra o resultado individual sem interromper os demais produtos."""
+    if estado["fase"] != FASE_JOGANDO or ativo not in estado["produtos_ativos"]:
+        return
     produto = ativo["produto"]
     aplicar_resultado(estado, resultado)
     if resultado["jogador_acertou"]:
@@ -85,6 +87,21 @@ def finalizar_produto(estado, ativo, resultado):
     estado["produtos_concluidos"] = estado.get("produtos_concluidos", 0) + 1
     estado["indice"] = estado["produtos_concluidos"]
     estado["produtos_concluidos_delta"] = estado.get("produtos_concluidos_delta", 0) + 1
+    if estado["erros"] >= LIMITE_ERROS:
+        # Congelar a falha terminal aqui impede outro evento ou prazo no mesmo
+        # quadro de substituir o produto que realmente atingiu o limite.
+        estado["derrota_detalhe"] = {
+            "nome": produto["nome"],
+            "faixa": produto["faixa"],
+            "numero": ativo["indice"] + 1,
+            "defeitos": list(produto["defeitos"]),
+            "decisao": resultado["decisao"],
+            "resposta_correta": resultado["resposta_correta"],
+            "prazo": ("decisao" if ativo["chegou"] else "chegada")
+                     if resultado["decisao"] is None else None,
+        }
+        estado["desfecho"] = "derrota"
+        estado["fase"] = FASE_FIM
 
 
 def processar_eventos(estado, zona):
@@ -142,7 +159,17 @@ def processar_eventos(estado, zona):
                 tentar_decidir(estado, "aprovar", zona)
             if evento.key == pygame.K_r:
                 tentar_decidir(estado, "rejeitar", zona)
+            if estado["fase"] == FASE_FIM:
+                # Exibir e salvar o fim antes de aceitar reinício/menu em outro evento.
+                return True
     return True
+
+
+def registrar_recorde(estado, recorde_caminho):
+    if estado["pontos"] > estado["recorde"]:
+        Path(recorde_caminho).parent.mkdir(parents=True, exist_ok=True)
+        salvar_recorde(recorde_caminho, estado["pontos"])
+        estado["recorde"] = estado["pontos"]
 
 
 def atualizar(estado, recorde_caminho, zona, delta_s=1 / FPS):
@@ -153,6 +180,10 @@ def atualizar(estado, recorde_caminho, zona, delta_s=1 / FPS):
     if estado["feedback_temporizador"] <= 0:
         estado["feedback_mensagem"] = None
 
+    if estado["fase"] == FASE_FIM:
+        # Uma decisão no processamento de eventos pode já ter encerrado o jogo.
+        registrar_recorde(estado, recorde_caminho)
+        return
     if estado["fase"] != FASE_JOGANDO:
         return
 
@@ -175,20 +206,11 @@ def atualizar(estado, recorde_caminho, zona, delta_s=1 / FPS):
         if esgotou:
             finalizar_produto(estado, ativo,
                               avaliar_decisao(ativo["produto"], None))
-        if estado["erros"] >= LIMITE_ERROS:
-            estado["desfecho"] = "derrota"
-            estado["fase"] = FASE_FIM
+        if estado["fase"] == FASE_FIM:
             break
 
-    if estado["erros"] >= LIMITE_ERROS:
-        estado["desfecho"] = "derrota"
-        estado["fase"] = FASE_FIM
-
     if estado["fase"] == FASE_FIM:
-        if estado["pontos"] > estado["recorde"]:
-            Path(recorde_caminho).parent.mkdir(parents=True, exist_ok=True)
-            salvar_recorde(recorde_caminho, estado["pontos"])
-            estado["recorde"] = estado["pontos"]
+        registrar_recorde(estado, recorde_caminho)
         return
 
     if estado.get("modo") == MODO_INFINITO:
@@ -215,10 +237,7 @@ def atualizar(estado, recorde_caminho, zona, delta_s=1 / FPS):
     if (estado.get("modo") == MODO_FASES and terminou_fila
             and not estado.get("produtos_ativos")):
         estado["fase"] = FASE_CONCLUIDA
-        if estado["pontos"] > estado["recorde"]:
-            Path(recorde_caminho).parent.mkdir(parents=True, exist_ok=True)
-            salvar_recorde(recorde_caminho, estado["pontos"])
-            estado["recorde"] = estado["pontos"]
+        registrar_recorde(estado, recorde_caminho)
 
 
 def executar_jogo():
