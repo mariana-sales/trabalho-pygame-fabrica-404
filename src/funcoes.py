@@ -8,13 +8,14 @@
 #
 # estado:    fase, produtos, indice, pos_produto, faixa_inspetor, pontos, erros,
 #            ia_errou, ia_corrigida, resultado, frames_feedback, desfecho, recorde
-#            tempo_chegada (segundos restantes), chegou (bool)
+#            tempo_chegada (segundos restantes), chegou (bool),
+#            tempo_decisao (segundos restantes)
 
 import random
 
 from src.config import (
     DEFEITOS, FASE_JOGANDO, NOMES_PRODUTOS, NUM_FAIXAS, PONTOS_POR_ACERTO,
-    QTD_DEFEITUOSOS, QTD_ERROS_IA, TOTAL_PRODUTOS, Y_INICIO_ESTEIRA, TEMPO_CHEGADA
+    QTD_DEFEITUOSOS, QTD_ERROS_IA, TOTAL_PRODUTOS, Y_INICIO_ESTEIRA, TEMPO_CHEGADA, TEMPO_DECISAO
 )
 
 def calcular_pontos(pontos_atual, pontos_ganhos):
@@ -115,6 +116,7 @@ def criar_estado(recorde):
         "recorde": recorde,
         "tempo_chegada": TEMPO_CHEGADA,
         "chegou": False,
+        "tempo_decisao": TEMPO_DECISAO,
     }
 
 
@@ -147,6 +149,11 @@ def contar_prazo_chegada(estado, na_faixa, delta_s):
         return False
     estado["tempo_chegada"] -= delta_s
     return estado["tempo_chegada"] <= 1e-8
+
+def contar_prazo_decisao(estado, delta_s):
+    """Conta o prazo para aprovar ou rejeitar. Devolve True se o tempo acabou."""
+    estado["tempo_decisao"] -= delta_s
+    return estado["tempo_decisao"] <= 1e-8
 
 def avaliar_decisao(produto, decisao):
     """Compara a decisão (ou None) com a resposta correta e devolve o resultado."""
@@ -186,6 +193,7 @@ def avancar_produto(estado):
     estado["frames_feedback"] = 0
     estado["tempo_chegada"] = TEMPO_CHEGADA
     estado["chegou"] = False
+    estado["tempo_decisao"] = TEMPO_DECISAO
 
 
 def partida_perdida(erros, limite_erros):

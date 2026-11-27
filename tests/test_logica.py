@@ -210,3 +210,17 @@ def test_prazo_chegada_reinicia_no_proximo_produto():
     f.avancar_produto(estado)
     assert estado["chegou"] is False
     assert estado["tempo_chegada"] == 2.0
+
+def test_prazo_decisao_esgota():
+    from src.config import TEMPO_DECISAO
+    estado = f.criar_estado(0)
+    assert not f.contar_prazo_decisao(estado, TEMPO_DECISAO - 0.5)
+    assert f.contar_prazo_decisao(estado, 0.5)
+
+
+def test_prazo_decisao_reinicia_no_proximo_produto():
+    from src.config import TEMPO_DECISAO
+    estado = f.criar_estado(0)
+    estado["tempo_decisao"] = 0.3
+    f.avancar_produto(estado)
+    assert estado["tempo_decisao"] == TEMPO_DECISAO

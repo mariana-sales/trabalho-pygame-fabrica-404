@@ -27,7 +27,8 @@ from src.funcoes import (
     aplicar_resultado,
     avancar_produto,
     verificar_desfecho,
-    contar_prazo_chegada
+    contar_prazo_chegada,
+    contar_prazo_decisao
 )
 
 from src.desenho import criar_fontes, desenhar_jogo
@@ -96,8 +97,14 @@ def atualizar(estado, recorde_caminho, zona, delta_s=1 / FPS):
         estado["pos_produto"] = avancar_transporte(estado["pos_produto"], delta_s)
         if verificar_colisao(rect_do_produto(estado), zona):
             produto = estado["produtos"][estado["indice"]]
-            na_faixa = estado["faixa_inspetor"] == produto["faixa"]
-            if contar_prazo_chegada(estado, na_faixa, delta_s):
+
+            if estado["chegou"]:
+                esgotou = contar_prazo_decisao(estado, delta_s)
+            else:
+                na_faixa = estado["faixa_inspetor"] == produto["faixa"]
+                esgotou = contar_prazo_chegada(estado, na_faixa, delta_s)
+
+            if esgotou:
                 finalizar_produto(estado, avaliar_decisao(produto, None))
 
     elif estado["fase"] == FASE_FEEDBACK:
