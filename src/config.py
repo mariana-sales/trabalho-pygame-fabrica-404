@@ -26,6 +26,18 @@ TEMPO_DECISAO = 4.0
 FASE_JOGANDO = "jogando"
 FASE_FEEDBACK = "feedback"
 FASE_FIM = "fim"
+FASE_MENU = "menu"
+FASE_CONCLUIDA = "fase_concluida"
+
+MODO_FASES = "fases"
+MODO_INFINITO = "infinito"
+
+# Progressão: 10, 15, 15, 20, 20... e dificuldade maior nas fases 3, 5, 7...
+TEMPO_DECISAO_MINIMO = 1.6
+REDUCAO_TEMPO_POR_DIFICULDADE = 0.35
+ACRESCIMO_VELOCIDADE_POR_DIFICULDADE = 0.18
+INTERVALO_DIFICULDADE_INFINITO_MIN = 5
+INTERVALO_DIFICULDADE_INFINITO_MAX = 8
 
 NOMES_PRODUTOS = ["Caixa", "Pacote", "Garrafa", "Lata", "Frasco"]
 

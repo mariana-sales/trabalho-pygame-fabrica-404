@@ -7,9 +7,11 @@ import pygame
 from src.funcoes import texto_feedback
 
 from src.config import (FAIXAS_X, Y_INSPETOR, DEFEITOS, LIMITE_ERROS,
-                        FASE_FIM, FASE_FEEDBACK, FASE_JOGANDO, PORTAS_X,
+                        FASE_FIM, FASE_FEEDBACK, FASE_JOGANDO, FASE_MENU,
+                        FASE_CONCLUIDA, MODO_INFINITO, PORTAS_X,
                         Y_BASE_PORTAS, Y_FIM_ESTEIRA, Y_INICIO_ESTEIRA,
                         ALTURA_INSPETOR, Y_PASSAGEM_PORTA)
+from src.funcoes import total_da_fase
 
 ARTES = Path(__file__).resolve().parents[1] / "assets" / "imagens"
 FUNDO = (13, 25, 36)
@@ -263,10 +265,12 @@ def desenhar_painel(tela, fontes, produto):
 def desenhar_hud(tela, fontes, estado):
     _cartao(tela, (12, 6, 776, 48), 237)
     pygame.draw.line(tela, CIANO, (16, 51), (784, 51))
-    total = len(estado["produtos"])
+    total = estado.get("total_fase") or len(estado["produtos"])
     progresso = min(estado["indice"]+1, total)
+    produto_atual = (f'{estado.get("produtos_concluidos", 0) + 1} / ∞'
+                     if estado.get("modo") == MODO_INFINITO else f"{progresso} / {total}")
     dados = [("PONTOS", estado["pontos"]), ("ERROS", f'{estado["erros"]} / {LIMITE_ERROS}'),
-             ("PRODUTO", f'{progresso} / {total}'), ("RECORDE", estado["recorde"])]
+             ("PRODUTO", produto_atual), ("RECORDE", estado["recorde"])]
     for i, (rotulo, valor) in enumerate(dados):
         x = 30+i*194
         pygame.draw.line(tela, (49, 77, 94), (x-14, 12), (x-14, 49))
@@ -311,15 +315,68 @@ def desenhar_tela_fim(tela, fontes, estado):
            (154, 510), SUAVE)
 
 
+def desenhar_menu(tela, fontes, estado):
+    """Tela inicial para escolher Fases ou Infinito."""
+    desenhar_fundo(tela)
+    escurecer = pygame.Surface((800, 600), pygame.SRCALPHA)
+    escurecer.fill((4, 12, 20, 145))
+    tela.blit(escurecer, (0, 0))
+    _texto(tela, fontes["titulo"], "FÁBRICA 404", (235, 115), TEXTO)
+    _texto(tela, fontes["normal"], "CONTROLE DE QUALIDADE", (290, 153), CIANO)
+    _texto(tela, fontes["pequena"], "Escolha como quer jogar", (310, 224), SUAVE)
+
+    for rect, titulo, detalhe in [
+        ((230, 310, 340, 58), "1  ·  MODO FASES", "Avance por fases com mais produtos e menos tempo."),
+        ((230, 382, 340, 58), "2  ·  MODO INFINITO", "Continue até perder; a velocidade aumenta aos poucos."),
+    ]:
+        _cartao(tela, rect, 238)
+        _texto(tela, fontes["normal"], titulo, (rect[0]+16, rect[1]+7), CIANO)
+        _texto(tela, fontes["rotulo"], detalhe, (rect[0]+16, rect[1]+34), SUAVE)
+
+    _texto(tela, fontes["pequena"], f"RECORDE  {estado['recorde']}", (338, 478), AMARELO)
+    _texto(tela, fontes["rotulo"], "Clique em um modo ou use as teclas 1 e 2 · Esc: sair",
+           (236, 526), SUAVE)
+
+
+def desenhar_fase_concluida(tela, fontes, estado):
+    """Resumo entre fases e indicação do desafio seguinte."""
+    desenhar_fundo(tela)
+    desenhar_hud(tela, fontes, estado)
+    _cartao(tela, (145, 190, 510, 225), 242)
+    _texto(tela, fontes["titulo"], f"FASE {estado['fase_numero']} CONCLUÍDA", (192, 222), VERDE)
+    proxima = estado["fase_numero"] + 1
+    total = total_da_fase(proxima)
+    nivel_atual = estado.get("nivel_dificuldade", 0)
+    nivel_proximo = max(0, (proxima - 1) // 2)
+    _texto(tela, fontes["normal"], f"Próxima fase: {proxima}  ·  {total} produtos",
+           (192, 282), TEXTO)
+    if nivel_proximo > nivel_atual:
+        aviso = "A dificuldade vai aumentar. Fique atento ao tempo e à velocidade."
+    else:
+        aviso = "A quantidade aumenta; a dificuldade permanece neste nível."
+    _linhas(tela, fontes["pequena"], aviso, 192, 319, 410, SUAVE)
+    _texto(tela, fontes["pequena"], estado.get("controles", "Enter: próxima fase"),
+           (192, 382), CIANO)
+
+
 def desenhar_rodape(tela, fontes, estado, portas):
     _cartao(tela, (0, 574, 800, 26), 228)
     texto = "Inspeção ocupada · porta fechada" if "fechada" in portas else "Inspeção livre · portas abertas"
     _texto(tela, fontes["pequena"], texto, (12, 577), AMARELO if "fechada" in portas else CIANO)
+    identificacao = (f"FASE {estado['fase_numero']}" if estado.get("modo") != MODO_INFINITO
+                    else "MODO INFINITO")
+    _texto(tela, fontes["rotulo"], identificacao, (290, 581), CIANO)
     controles = estado.get("controles", "Ciano: livre · Âmbar: ocupada")
     _texto(tela, fontes["pequena"], controles, (460, 577), SUAVE)
 
 
 def _desenhar_quadro(tela, interface, fontes, estado, zona, rect_produto, tempo_ms):
+    if estado["fase"] == FASE_MENU:
+        desenhar_menu(interface, fontes, estado)
+        return
+    if estado["fase"] == FASE_CONCLUIDA:
+        desenhar_fase_concluida(interface, fontes, estado)
+        return
     if estado["fase"] == FASE_FIM:
         desenhar_fundo(tela)
         desenhar_hud(interface, fontes, estado)
@@ -354,6 +411,11 @@ def desenhar_jogo(tela, fontes, estado, zona, rect_produto, tempo_ms=None):
     tempo_ms = pygame.time.get_ticks() if tempo_ms is None else tempo_ms
     if tela.get_size() == (800, 600):
         _desenhar_quadro(tela, tela, fontes, estado, zona, rect_produto, tempo_ms)
+        return
+    if estado["fase"] in (FASE_MENU, FASE_CONCLUIDA):
+        cena = pygame.Surface((800, 600))
+        _desenhar_quadro(cena, cena, fontes, estado, zona, rect_produto, tempo_ms)
+        tela.blit(_cobrir(cena, tela.get_size(), ancorar_base=True), (0, 0))
         return
     cena = pygame.Surface((800, 600))
     interface = pygame.Surface((800, 600), pygame.SRCALPHA)

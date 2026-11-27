@@ -24,25 +24,33 @@ Em Fábrica 404, uma fábrica usa inteligência artificial para classificar prod
 
 O jogador precisa estar na faixa do produto, conferir suas características e decidir quando ele tocar a zona de inspeção. Após cada decisão, o jogo mostra um feedback explicando o resultado.
 
+## Modos de jogo
+
+- **Fases:** começa com 10 produtos. A quantidade passa para 15 nas fases 2 e 3, 20 nas fases 4 e 5, e aumenta em mais 5 a cada duas fases. A dificuldade aumenta nas fases 3, 5, 7 e assim por diante, reduzindo o tempo de decisão e acelerando a esteira.
+- **Infinito:** não tem quantidade final. A velocidade e a pressão do tempo aumentam em intervalos variáveis, sem indicar ao jogador exatamente quando ocorrerá o próximo aumento.
+
 ## Objetivo do jogador
 
-Classificar corretamente os 10 produtos da partida, conferindo as características de cada um em vez de seguir cegamente a recomendação da IA. O jogador vence ao concluir os 10 produtos com no máximo 2 erros e perde ao cometer o 3º erro.
+Conferir as características de cada produto em vez de seguir cegamente a recomendação da IA. No modo Fases, concluir cada fase libera a próxima; nos dois modos, a partida termina ao cometer o 3º erro.
 
 ## Regras do jogo
 
 - Um produto por vez surge em uma faixa aleatória e avança pela esteira; suas características aparecem em um painel fixo na tela.
-- A IA recomenda aprovar ou rejeitar cada produto e erra em um número fixo de produtos por partida, sorteados a cada partida.
+- A IA recomenda aprovar ou rejeitar cada produto e pode errar. Na primeira fase, são 10 produtos, 5 defeituosos e 4 recomendações incorretas.
 - O jogador move o inspetor até a faixa do produto e pode decidir assim que ele colide com a zona de inspeção. Nesse ponto ele já atravessou completamente a porta.
 - Se o produto tiver qualquer defeito, a resposta correta é rejeitar; sem defeitos, é aprovar. Cada acerto vale +10 pontos; cada erro aumenta em 1 o contador de erros.
 - Nesta revisão o produto aguarda a decisão parado; não foi introduzido um prazo de inspeção. O contrato de tempo esgotado continua testado, mas não é acionado pelo loop.
 - Após cada decisão, o jogo explica se o jogador acertou, se a IA acertou e quais eram os defeitos.
 ## Controles
 
+- Na tela inicial, `1` ou clique: modo Fases; `2` ou clique: modo Infinito.
 - Setas esquerda e direita: mudar de faixa
 - A: aprovar o produto
 - R: rejeitar o produto
 - ESC: sair do jogo
-- Enter na tela final: nova partida
+- Enter na tela final: jogar novamente no mesmo modo.
+- Enter entre fases: iniciar a próxima fase.
+- M: voltar ao menu.
 
 As setas e decisões ficam bloqueadas durante o feedback e na tela final.
 O recorde é salvo ao terminar a partida, apenas se superar o valor anterior.

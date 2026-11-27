@@ -17,6 +17,11 @@ from src.config import (
     DEFEITOS, FASE_JOGANDO, NOMES_PRODUTOS, NUM_FAIXAS, PONTOS_POR_ACERTO,
     QTD_DEFEITUOSOS, QTD_ERROS_IA, TOTAL_PRODUTOS, Y_INICIO_ESTEIRA, TEMPO_CHEGADA, TEMPO_DECISAO
 )
+from src.config import (
+    MODO_FASES, MODO_INFINITO, TEMPO_DECISAO_MINIMO,
+    REDUCAO_TEMPO_POR_DIFICULDADE, ACRESCIMO_VELOCIDADE_POR_DIFICULDADE,
+    INTERVALO_DIFICULDADE_INFINITO_MIN, INTERVALO_DIFICULDADE_INFINITO_MAX,
+)
 
 def calcular_pontos(pontos_atual, pontos_ganhos):
     """Soma os pontos ganhos à pontuação atual."""
@@ -86,6 +91,88 @@ def gerar_produtos(total, qtd_defeituosos, qtd_erros_ia):
     return produtos
 
 
+def total_da_fase(numero_fase):
+    """Quantidade por fase: 10, 15, 15, 20, 20..."""
+    numero_fase = max(1, int(numero_fase))
+    return TOTAL_PRODUTOS + 5 * (numero_fase // 2)
+
+
+def nivel_dificuldade_fase(numero_fase):
+    """O nível aumenta nas fases 3, 5, 7... e fica igual na seguinte."""
+    return max(0, (max(1, int(numero_fase)) - 1) // 2)
+
+
+def parametros_dificuldade(nivel):
+    """Devolve o tempo para decidir e o multiplicador da velocidade."""
+    nivel = max(0, int(nivel))
+    tempo = max(TEMPO_DECISAO_MINIMO,
+                TEMPO_DECISAO - nivel * REDUCAO_TEMPO_POR_DIFICULDADE)
+    velocidade = 1 + nivel * ACRESCIMO_VELOCIDADE_POR_DIFICULDADE
+    return tempo, velocidade
+
+
+def gerar_produto_infinito():
+    """Gera um item independente para continuar uma partida infinita."""
+    defeitos = sortear_defeitos() if random.random() < 0.5 else []
+    produto = {
+        "nome": random.choice(NOMES_PRODUTOS),
+        "faixa": random.randrange(NUM_FAIXAS),
+        "defeitos": defeitos,
+    }
+    correta = resposta_correta(produto)
+    produto["recomendacao_ia"] = (
+        inverter_recomendacao(correta) if random.random() < 0.4 else correta
+    )
+    return produto
+
+
+def configurar_fase(estado, numero_fase):
+    """Carrega os produtos e a dificuldade da fase sem apagar o placar da sessão."""
+    total = total_da_fase(numero_fase)
+    nivel = nivel_dificuldade_fase(numero_fase)
+    tempo, velocidade = parametros_dificuldade(nivel)
+    estado["fase"] = FASE_JOGANDO
+    estado["modo"] = MODO_FASES
+    estado["fase_numero"] = numero_fase
+    estado["nivel_dificuldade"] = nivel
+    estado["total_fase"] = total
+    estado["produtos"] = gerar_produtos(total, total // 2, int(total * 0.4))
+    estado["indice"] = 0
+    estado["produtos_concluidos"] = 0
+    estado["tempo_decisao_base"] = tempo
+    estado["multiplicador_velocidade"] = velocidade
+    estado["tempo_decisao"] = tempo
+    estado["tempo_chegada"] = TEMPO_CHEGADA
+    estado["pos_produto"] = Y_INICIO_ESTEIRA
+    estado["chegou"] = False
+    estado["resultado"] = None
+    estado["desfecho"] = None
+    estado["frames_feedback"] = 0
+
+
+def iniciar_modo(estado, modo):
+    """Inicia uma sessão nova no modo Fases ou Infinito."""
+    if modo not in (MODO_FASES, MODO_INFINITO):
+        modo = MODO_FASES
+    estado.update(pontos=0, erros=0, ia_errou=0, ia_corrigida=0,
+                  resultado=None, desfecho=None, fase_numero=1,
+                  produtos_concluidos=0)
+    if modo == MODO_FASES:
+        configurar_fase(estado, 1)
+        return
+
+    tempo, velocidade = parametros_dificuldade(0)
+    estado.update(fase=FASE_JOGANDO, modo=MODO_INFINITO,
+                  fase_numero=0, nivel_dificuldade=0, total_fase=None,
+                  produtos=gerar_produtos(TOTAL_PRODUTOS, QTD_DEFEITUOSOS, QTD_ERROS_IA),
+                  indice=0, produtos_concluidos=0,
+                  tempo_decisao_base=tempo, multiplicador_velocidade=velocidade,
+                  tempo_decisao=tempo, tempo_chegada=TEMPO_CHEGADA,
+                  pos_produto=Y_INICIO_ESTEIRA, chegou=False,
+                  proximo_aumento=random.randint(INTERVALO_DIFICULDADE_INFINITO_MIN,
+                                                 INTERVALO_DIFICULDADE_INFINITO_MAX))
+
+
 def resposta_correta(produto):
     """Sem defeitos: 'aprovar'. Com defeito: 'rejeitar'."""
     if produto["defeitos"]:
@@ -117,7 +204,23 @@ def criar_estado(recorde):
         "tempo_chegada": TEMPO_CHEGADA,
         "chegou": False,
         "tempo_decisao": TEMPO_DECISAO,
+        "modo": MODO_FASES,
+        "fase_numero": 1,
+        "nivel_dificuldade": 0,
+        "total_fase": TOTAL_PRODUTOS,
+        "produtos_concluidos": 0,
+        "tempo_decisao_base": TEMPO_DECISAO,
+        "multiplicador_velocidade": 1.0,
+        "proximo_aumento": random.randint(INTERVALO_DIFICULDADE_INFINITO_MIN,
+                                           INTERVALO_DIFICULDADE_INFINITO_MAX),
     }
+
+
+def criar_estado_menu(recorde):
+    """Cria um estado novo na tela inicial sem iniciar uma partida."""
+    estado = criar_estado(recorde)
+    estado["fase"] = "menu"
+    return estado
 
 
 def mover_faixa(faixa_atual, direcao, num_faixas):
@@ -193,7 +296,7 @@ def avancar_produto(estado):
     estado["frames_feedback"] = 0
     estado["tempo_chegada"] = TEMPO_CHEGADA
     estado["chegou"] = False
-    estado["tempo_decisao"] = TEMPO_DECISAO
+    estado["tempo_decisao"] = estado.get("tempo_decisao_base", TEMPO_DECISAO)
 
 
 def partida_perdida(erros, limite_erros):

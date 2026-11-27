@@ -5,9 +5,10 @@ from src.config import (FAIXAS_X, Y_INICIO_ESTEIRA, Y_PARADA_PRODUTO,
                         VELOCIDADE_TRANSPORTE, LARGURA_PRODUTO, ALTURA_PRODUTO)
 
 
-def avancar_transporte(posicao, delta_s):
+def avancar_transporte(posicao, delta_s, multiplicador=1.0):
     """Não ultrapassa a parada, mesmo num quadro longo."""
-    return mover_produto(posicao, VELOCIDADE_TRANSPORTE * max(0, delta_s), Y_PARADA_PRODUTO)
+    velocidade = VELOCIDADE_TRANSPORTE * max(0, delta_s) * max(0, multiplicador)
+    return mover_produto(posicao, velocidade, Y_PARADA_PRODUTO)
 
 
 def rect_produto(estado):
