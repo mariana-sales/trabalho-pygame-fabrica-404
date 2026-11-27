@@ -190,3 +190,23 @@ def test_texto_feedback_informa_ia_defeitos_e_tempo():
     assert "Tempo esgotado" in linhas[0]
     assert linhas[1] == "A IA errou."
     assert "Código ilegível" in linhas[2]
+
+def test_prazo_chegada_esgota():
+    estado = f.criar_estado(0)
+    assert not f.contar_prazo_chegada(estado, False, 1.5)
+    assert f.contar_prazo_chegada(estado, False, 0.5)
+
+
+def test_prazo_chegada_para_ao_chegar():
+    estado = f.criar_estado(0)
+    assert not f.contar_prazo_chegada(estado, True, 1.0)
+    assert estado["chegou"]
+    assert not f.contar_prazo_chegada(estado, False, 10)
+
+
+def test_prazo_chegada_reinicia_no_proximo_produto():
+    estado = f.criar_estado(0)
+    estado.update(chegou=True, tempo_chegada=0.3)
+    f.avancar_produto(estado)
+    assert estado["chegou"] is False
+    assert estado["tempo_chegada"] == 2.0

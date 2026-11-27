@@ -27,6 +27,7 @@ from src.funcoes import (
     aplicar_resultado,
     avancar_produto,
     verificar_desfecho,
+    contar_prazo_chegada
 )
 
 from src.desenho import criar_fontes, desenhar_jogo
@@ -93,6 +94,11 @@ def atualizar(estado, recorde_caminho, zona, delta_s=1 / FPS):
     """Move com delta time; feedback conta de DURACAO_FEEDBACK até zero."""
     if estado["fase"] == FASE_JOGANDO:
         estado["pos_produto"] = avancar_transporte(estado["pos_produto"], delta_s)
+        if verificar_colisao(rect_do_produto(estado), zona):
+            produto = estado["produtos"][estado["indice"]]
+            na_faixa = estado["faixa_inspetor"] == produto["faixa"]
+            if contar_prazo_chegada(estado, na_faixa, delta_s):
+                finalizar_produto(estado, avaliar_decisao(produto, None))
 
     elif estado["fase"] == FASE_FEEDBACK:
         estado["frames_feedback"] = max(0, estado["frames_feedback"] - max(0, delta_s) * FPS)

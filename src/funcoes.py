@@ -8,12 +8,13 @@
 #
 # estado:    fase, produtos, indice, pos_produto, faixa_inspetor, pontos, erros,
 #            ia_errou, ia_corrigida, resultado, frames_feedback, desfecho, recorde
+#            tempo_chegada (segundos restantes), chegou (bool)
 
 import random
 
 from src.config import (
     DEFEITOS, FASE_JOGANDO, NOMES_PRODUTOS, NUM_FAIXAS, PONTOS_POR_ACERTO,
-    QTD_DEFEITUOSOS, QTD_ERROS_IA, TOTAL_PRODUTOS, Y_INICIO_ESTEIRA,
+    QTD_DEFEITUOSOS, QTD_ERROS_IA, TOTAL_PRODUTOS, Y_INICIO_ESTEIRA, TEMPO_CHEGADA
 )
 
 def calcular_pontos(pontos_atual, pontos_ganhos):
@@ -112,6 +113,8 @@ def criar_estado(recorde):
         "frames_feedback": 0,
         "desfecho": None,
         "recorde": recorde,
+        "tempo_chegada": TEMPO_CHEGADA,
+        "chegou": False,
     }
 
 
@@ -135,6 +138,15 @@ def mover_produto(pos_produto, velocidade, pos_limite):
     """Avança o produto pela esteira sem ultrapassar pos_limite."""
     return min(pos_produto + velocidade, pos_limite)
 
+def contar_prazo_chegada(estado, na_faixa, delta_s):
+    """Conta o prazo para chegar à esteira. Devolve True se o tempo acabou."""
+    if estado["chegou"]:
+        return False
+    if na_faixa:
+        estado["chegou"] = True
+        return False
+    estado["tempo_chegada"] -= delta_s
+    return estado["tempo_chegada"] <= 1e-8
 
 def avaliar_decisao(produto, decisao):
     """Compara a decisão (ou None) com a resposta correta e devolve o resultado."""
@@ -172,6 +184,8 @@ def avancar_produto(estado):
     estado["fase"] = FASE_JOGANDO
     estado["resultado"] = None
     estado["frames_feedback"] = 0
+    estado["tempo_chegada"] = TEMPO_CHEGADA
+    estado["chegou"] = False
 
 
 def partida_perdida(erros, limite_erros):
