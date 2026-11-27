@@ -2,3 +2,5 @@
 .pytest_cache/
 .DS_Store
 .venv/
+data/inspetores.json
+data/.inspetores-*.tmp

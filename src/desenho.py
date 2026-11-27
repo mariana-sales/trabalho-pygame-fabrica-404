@@ -12,6 +12,8 @@ from src.config import (FAIXAS_X, Y_INSPETOR, DEFEITOS, LIMITE_ERROS,
                         Y_BASE_PORTAS, Y_FIM_ESTEIRA, Y_INICIO_ESTEIRA,
                         ALTURA_INSPETOR, Y_PASSAGEM_PORTA)
 from src.funcoes import total_da_fase
+from src.config import FASE_LOJA
+from src.loja import INSPETORES
 from src.transporte import rect_produto_ativo
 
 ARTES = Path(__file__).resolve().parents[1] / "assets" / "imagens"
@@ -234,9 +236,29 @@ def desenhar_cenario(tela, zona, portas=None, faixa_ativa=None, tempo_ms=0, em_m
     desenhar_zonas(tela, zona)
 
 
-def desenhar_inspetor(tela, faixa_inspetor):
+@lru_cache(maxsize=8)
+def _inspetor_pronto(aparencia="padrao"):
+    original = _arte("inspetor_a.png", (76, ALTURA_INSPETOR))
+    if original is None:
+        return None
+    cor = next((item["cor"] for item in INSPETORES if item["id"] == aparencia), None)
+    if cor is None:
+        return original
+    arte = original.copy()
+    # Apenas os tons azul-marinho do tecido. Cabelo, pele, capacete,
+    # faixas refletivas e contornos mantêm os pixels e as cores originais.
+    for y in range(arte.get_height()):
+        for x in range(arte.get_width()):
+            r, g, b, alfa = arte.get_at((x, y))
+            if alfa and b > r * 1.15 and b > g * 1.08 and 18 < b < 145:
+                luz = b / 70
+                arte.set_at((x, y), (*[min(220, round(c * luz)) for c in cor], alfa))
+    return arte
+
+
+def desenhar_inspetor(tela, faixa_inspetor, aparencia="padrao"):
     x = FAIXAS_X[faixa_inspetor]
-    arte = _arte("inspetor_a.png", (76, ALTURA_INSPETOR, Y_PASSAGEM_PORTA))
+    arte = _inspetor_pronto(aparencia)
     if arte is not None:
         tela.blit(arte, arte.get_rect(midbottom=(x, Y_INSPETOR)))
     else:
@@ -350,14 +372,47 @@ def desenhar_menu(tela, fontes, estado):
     for rect, titulo, detalhe in [
         ((230, 310, 340, 58), "1  ·  MODO FASES", "Avance por fases com mais produtos e menos tempo."),
         ((230, 382, 340, 58), "2  ·  MODO INFINITO", "Continue até perder; a velocidade aumenta aos poucos."),
+        ((230, 454, 340, 58), "3  ·  LOJA DE INSPETORES", "Compre e equipe aparências com seu saldo."),
     ]:
         _cartao(tela, rect, 238)
         _texto(tela, fontes["normal"], titulo, (rect[0]+16, rect[1]+7), CIANO)
         _texto(tela, fontes["rotulo"], detalhe, (rect[0]+16, rect[1]+34), SUAVE)
 
-    _texto(tela, fontes["pequena"], f"RECORDE  {estado['recorde']}", (338, 478), AMARELO)
-    _texto(tela, fontes["rotulo"], "Clique em um modo ou use as teclas 1 e 2 · Esc: sair",
-           (236, 526), SUAVE)
+    saldo = estado.get("perfil", {}).get("saldo", 0)
+    _texto(tela, fontes["pequena"], f"RECORDE  {estado['recorde']}    ·    SALDO  {saldo}", (260, 530), AMARELO)
+    _texto(tela, fontes["rotulo"], "Clique em uma opção ou use 1, 2 e 3 · Esc: sair",
+           (236, 558), SUAVE)
+
+
+def desenhar_loja(tela, fontes, estado):
+    desenhar_fundo(tela)
+    _cartao(tela, (24, 36, 752, 530), 247)
+    _texto(tela, fontes["titulo"], "LOJA DE INSPETORES", (48, 56), CIANO)
+    perfil = estado["perfil"]
+    _texto(tela, fontes["normal"], f"Saldo: {perfil['saldo']} pontos", (48, 96), AMARELO)
+    _texto(tela, fontes["pequena"], "Cada acerto rende 10 ao saldo. Aparências são apenas cosméticas.", (48, 127), SUAVE)
+    for i, item in enumerate(INSPETORES):
+        x = 44 + i * 180
+        rect = pygame.Rect(x, 171, 172, 252)
+        _cartao(tela, rect)
+        selecionado = i == estado.get("loja_selecao", 0)
+        pygame.draw.rect(tela, CIANO if selecionado else SUAVE, rect, 3 if selecionado else 1)
+        arte = _inspetor_pronto(item["id"])
+        if arte is not None:
+            tela.blit(arte, arte.get_rect(midbottom=(x+86, 321)))
+        else:
+            pygame.draw.rect(tela, item["cor"] or CIANO, (x+68, 235, 36, 64))
+            pygame.draw.rect(tela, AMARELO, (x+64, 221, 44, 14))
+        _texto(tela, fontes["normal"], item["nome"], (x+12, 333))
+        preco = f"Preço: {item['preco']} pontos" if item["preco"] else "Grátis"
+        _texto(tela, fontes["pequena"], preco, (x+12, 362), SUAVE)
+        status = ("EQUIPADO" if perfil["equipado"] == item["id"] else
+                  "COMPRADO" if item["id"] in perfil["comprados"] else "BLOQUEADO")
+        _texto(tela, fontes["pequena"], status, (x+12, 390), VERDE if status != "BLOQUEADO" else AMARELO)
+    _linhas(tela, fontes["normal"], estado.get("loja_mensagem", ""), 48, 439, 704, CIANO)
+    _texto(tela, fontes["pequena"], estado.get("aviso_carteira", ""), (48, 492), AMARELO)
+    _texto(tela, fontes["pequena"], "Setas: escolher | Enter: comprar/equipar | Esc ou M: voltar ao menu",
+           (48, 530), SUAVE)
 
 
 def desenhar_fase_concluida(tela, fontes, estado):
@@ -394,6 +449,9 @@ def desenhar_rodape(tela, fontes, estado, portas):
 
 
 def _desenhar_quadro(tela, interface, fontes, estado, zona, rect_produto, tempo_ms):
+    if estado["fase"] == FASE_LOJA:
+        desenhar_loja(interface, fontes, estado)
+        return
     if estado["fase"] == FASE_MENU:
         desenhar_menu(interface, fontes, estado)
         return
@@ -430,7 +488,7 @@ def _desenhar_quadro(tela, interface, fontes, estado, zona, rect_produto, tempo_
         if rect.top < Y_PASSAGEM_PORTA:
             # O produto passa por trás da travessa, sem ser pintado sobre ela.
             desenhar_portas(tela, portas)
-    desenhar_inspetor(tela, estado["faixa_inspetor"])
+    desenhar_inspetor(tela, estado["faixa_inspetor"], estado.get("perfil", {}).get("equipado", "padrao"))
     # UI por último: mesma organização em todas as resoluções.
     desenhar_hud(interface, fontes, estado)
     if produto_atual is not None:
@@ -448,6 +506,9 @@ def _desenhar_quadro(tela, interface, fontes, estado, zona, rect_produto, tempo_
         _cartao(interface, (248, 534, 304, 30), 232)
         texto = fontes["pequena"].render(mensagem, True, cor)
         interface.blit(texto, texto.get_rect(center=(400, 549)))
+    if estado.get("aviso_carteira"):
+        _cartao(interface, (12, 502, 776, 26))
+        _texto(interface, fontes["pequena"], estado["aviso_carteira"], (24, 505), AMARELO)
 
 
 def desenhar_jogo(tela, fontes, estado, zona, rect_produto, tempo_ms=None):
@@ -456,10 +517,13 @@ def desenhar_jogo(tela, fontes, estado, zona, rect_produto, tempo_ms=None):
     if tela.get_size() == (800, 600):
         _desenhar_quadro(tela, tela, fontes, estado, zona, rect_produto, tempo_ms)
         return
-    if estado["fase"] in (FASE_MENU, FASE_CONCLUIDA):
+    if estado["fase"] in (FASE_MENU, FASE_CONCLUIDA, FASE_LOJA):
         cena = pygame.Surface((800, 600))
         _desenhar_quadro(cena, cena, fontes, estado, zona, rect_produto, tempo_ms)
-        tela.blit(_cobrir(cena, tela.get_size(), ancorar_base=True), (0, 0))
+        escala = min(tela.get_width()/800, tela.get_height()/600)
+        cena = pygame.transform.scale(cena, (round(800*escala), round(600*escala)))
+        tela.fill(FUNDO)
+        tela.blit(cena, cena.get_rect(center=tela.get_rect().center))
         return
     cena = pygame.Surface((800, 600))
     interface = pygame.Surface((800, 600), pygame.SRCALPHA)

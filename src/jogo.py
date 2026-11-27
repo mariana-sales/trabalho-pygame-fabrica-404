@@ -9,6 +9,9 @@ from src.config import (
     TITULO_JOGO,
     CINZA,
     CAMINHO_RECORDE,
+    CAMINHO_PERFIL,
+    PONTOS_POR_ACERTO,
+    FASE_LOJA,
     MODO_FASES,
     MODO_INFINITO,
     NUM_FAIXAS,
@@ -37,6 +40,8 @@ from src.funcoes import (
 
 from src.desenho import criar_fontes, desenhar_jogo
 from src.dados import carregar_recorde, salvar_recorde
+from src.loja import (INSPETORES, carregar_perfil, abrir_loja, comprar_ou_equipar,
+                      creditar_acerto, persistir_carteira)
 from src.transporte import avancar_transporte, rect_produto, rect_produto_ativo
 
 
@@ -66,6 +71,8 @@ def finalizar_produto(estado, ativo, resultado):
     """Registra o resultado individual sem interromper os demais produtos."""
     produto = ativo["produto"]
     aplicar_resultado(estado, resultado)
+    if resultado["jogador_acertou"]:
+        creditar_acerto(estado, PONTOS_POR_ACERTO)
     estado["resultado"] = resultado
     estado["produto_feedback"] = produto
     estado["feedback_mensagem"] = (
@@ -91,7 +98,19 @@ def processar_eventos(estado, zona):
                     iniciar_modo(estado, MODO_FASES)
                 elif pygame.Rect(230, 382, 340, 58).collidepoint(evento.pos):
                     iniciar_modo(estado, MODO_INFINITO)
+                elif pygame.Rect(230, 454, 340, 58).collidepoint(evento.pos):
+                    abrir_loja(estado)
         if evento.type == pygame.KEYDOWN:
+            if estado["fase"] == FASE_LOJA:
+                if evento.key in (pygame.K_ESCAPE, pygame.K_m):
+                    estado["fase"] = FASE_MENU
+                elif evento.key in (pygame.K_LEFT, pygame.K_UP):
+                    estado["loja_selecao"] = (estado["loja_selecao"] - 1) % len(INSPETORES)
+                elif evento.key in (pygame.K_RIGHT, pygame.K_DOWN):
+                    estado["loja_selecao"] = (estado["loja_selecao"] + 1) % len(INSPETORES)
+                elif evento.key == pygame.K_RETURN:
+                    comprar_ou_equipar(estado)
+                continue
             if evento.key == pygame.K_ESCAPE:
                 return False
             if estado["fase"] == FASE_MENU:
@@ -99,6 +118,8 @@ def processar_eventos(estado, zona):
                     iniciar_modo(estado, MODO_FASES)
                 elif evento.key in (pygame.K_2, pygame.K_KP2):
                     iniciar_modo(estado, MODO_INFINITO)
+                elif evento.key in (pygame.K_3, pygame.K_KP3, pygame.K_l):
+                    abrir_loja(estado)
                 continue
             if estado["fase"] == FASE_CONCLUIDA:
                 if evento.key == pygame.K_RETURN:
@@ -211,13 +232,18 @@ def executar_jogo():
         zona = criar_zona()
         caminho = Path(__file__).resolve().parents[1] / CAMINHO_RECORDE
         estado = criar_estado_menu(carregar_recorde(caminho))
+        estado["caminho_perfil"] = Path(__file__).resolve().parents[1] / CAMINHO_PERFIL
+        estado["perfil"] = carregar_perfil(estado["caminho_perfil"])
         while True:
             delta_s = relogio.tick(FPS) / 1000
             if not processar_eventos(estado, zona):
+                persistir_carteira(estado)
                 break
             atualizar(estado, caminho, zona, delta_s)
             if estado["fase"] == FASE_MENU:
-                estado["controles"] = "1: Fases | 2: Infinito | Esc: sair"
+                estado["controles"] = "1: Fases | 2: Infinito | 3: Loja | Esc: sair"
+            elif estado["fase"] == FASE_LOJA:
+                estado["controles"] = "Setas: escolher | Enter: comprar/equipar | Esc ou M: voltar"
             elif estado["fase"] == FASE_CONCLUIDA:
                 estado["controles"] = "Enter: próxima fase | M: menu | Esc: sair"
             elif estado["fase"] == FASE_FIM:

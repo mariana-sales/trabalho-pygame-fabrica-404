@@ -10,6 +10,7 @@ PRETO = (0, 0, 0)
 CINZA = (212,212,212)
 
 CAMINHO_RECORDE = "data/recorde.txt"
+CAMINHO_PERFIL = "data/inspetores.json"
 CAMINHO_SPRITES = "assets/imagens/spritesheet.bmp"
 
 
@@ -27,6 +28,7 @@ FASE_JOGANDO = "jogando"
 FASE_FEEDBACK = "feedback"
 FASE_FIM = "fim"
 FASE_MENU = "menu"
+FASE_LOJA = "loja"
 FASE_CONCLUIDA = "fase_concluida"
 
 MODO_FASES = "fases"

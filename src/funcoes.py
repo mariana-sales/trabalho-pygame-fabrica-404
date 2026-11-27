@@ -12,6 +12,7 @@
 #            tempo_decisao (segundos restantes)
 
 import random
+from src.loja import perfil_novo
 
 from src.config import (
     DEFEITOS, FASE_JOGANDO, NOMES_PRODUTOS, NUM_FAIXAS, PONTOS_POR_ACERTO,
@@ -239,6 +240,7 @@ def ia_acertou(produto):
 def criar_estado(recorde):
     """Estado de uma partida nova."""
     return {
+        "perfil": perfil_novo(),
         "fase": FASE_JOGANDO,
         "produtos": gerar_produtos(TOTAL_PRODUTOS, QTD_DEFEITUOSOS, QTD_ERROS_IA),
         "indice": 0,

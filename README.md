@@ -29,6 +29,22 @@ O jogador precisa acompanhar as três faixas, mover o inspetor até a faixa de c
 - **Fases:** começa com 10 produtos. A quantidade passa para 15 nas fases 2 e 3, 20 nas fases 4 e 5, e aumenta em mais 5 a cada duas fases. A dificuldade aumenta nas fases 3, 5, 7 e assim por diante, reduzindo o tempo de decisão e acelerando a esteira.
 - **Infinito:** não tem quantidade final. A velocidade e a pressão do tempo aumentam em intervalos variáveis, sem indicar ao jogador exatamente quando ocorrerá o próximo aumento.
 
+## Loja de inspetores
+
+No menu, use `3`, `L` ou clique em **Loja de inspetores**. Navegue com as
+setas e pressione `Enter` para comprar e equipar, ou equipar um item já comprado.
+`Esc` ou `M` volta ao menu. A loja mostra preço, saldo e os estados bloqueado,
+comprado e equipado. O Original é gratuito; Petróleo custa 100, Violeta 200
+e Aço 300 pontos. As variações só trocam a paleta do uniforme, preservando
+cabelo vermelho, capacete, faixas de segurança e silhueta; não dão vantagens.
+
+Cada acerto credita 10 pontos ao **saldo de compras**, salvo imediatamente e
+acumulado entre partidas. Comprar não reduz a pontuação da partida nem o recorde.
+O arquivo `data/inspetores.json` guarda saldo, compras e aparência equipada;
+reiniciar a partida ou o aplicativo mantém a seleção. Arquivo ausente ou inválido
+inicia com saldo zero e o Original disponível. Se a gravação falhar, o jogo avisa:
+ganhos ficam em memória e compras não são confirmadas até poder salvar.
+
 ## Objetivo do jogador
 
 Conferir as características de cada produto em vez de seguir cegamente a recomendação da IA. No modo Fases, concluir cada fase libera a próxima; nos dois modos, a partida termina ao cometer o 3º erro.
@@ -44,7 +60,7 @@ Conferir as características de cada produto em vez de seguir cegamente a recome
 - Após cada decisão, o jogo explica se o jogador acertou, se a IA acertou e quais eram os defeitos.
 ## Controles
 
-- Na tela inicial, `1` ou clique: modo Fases; `2` ou clique: modo Infinito.
+- Na tela inicial, `1` ou clique: modo Fases; `2` ou clique: modo Infinito; `3`/`L` ou clique: loja.
 - Setas esquerda e direita: mudar de faixa
 - A: aprovar o produto
 - R: rejeitar o produto
@@ -102,11 +118,13 @@ calcula o retângulo de cada sprite com escala gradual.
 O texto de feedback vem das regras e o desenho acrescenta o destaque de correção
 ou divergência da IA. Contrato: [tests/README.md](tests/README.md).
 
-Validação da integração: **108 testes passaram**, sem falhas esperadas. Inclui
+Validação histórica da integração anterior: **108 testes passaram**, sem falhas esperadas. Inclui
 transporte a 30/60/144 FPS, portas, plataforma estática, decisões, vitória,
 derrota, reinício com Enter, persistência do recorde e ciclo completo pelo loop
 com eventos de teclado e SDL sem janela. Quadros do percurso real
 conferidos visualmente em 800 × 600; testes de desenho cobrem outras resoluções.
+As mudanças da loja receberam apenas verificação sintática e `git diff --check`;
+testes automatizados e validação jogando ficam para execução manual pelo autor.
 
 Artes: `assets/imagens/fabrica404/` contém o pacote fornecido pelo usuário
 (portas B, zonas B e inspetor A) e o fundo derivado da referência aprovada.
